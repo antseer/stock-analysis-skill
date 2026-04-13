@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Antseer · Stock Analysis v6.3</title>
+<style>
+/* ═══ Imports ═══ */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+/* ═══ Reset & Base ═══ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  /* ── Surface scale: green-tinted neutrals (hue 142) ── */
+  --bg:oklch(8% 0.008 142);
+  --sf0:oklch(10% 0.006 142);
+  --sf1:oklch(13% 0.005 142);
+  --sf2:oklch(17% 0.004 142);
+  --sf3:oklch(22% 0.003 142);
+  /* ── Brand ── */
+  --brand:oklch(73% 0.18 142);
+  --brand-dim:oklch(50% 0.10 142);
+  --brand-bg:oklch(14% 0.025 142);
+  --brand-glow:oklch(73% 0.18 142 / 0.08);
+  /* ── Text ── */
+  --tx1:oklch(93% 0.004 142);
+  --tx2:oklch(72% 0.004 142);
+  --tx3:oklch(48% 0.006 142);
+  --tx4:oklch(30% 0.004 142);
+  /* ── Semantic ── */
+  --red:oklch(65% 0.2 25);
+  --green:oklch(73% 0.18 142);
+  --amber:oklch(75% 0.15 85);
+  /* ── Space scale (4pt) ── */
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;--s8:64px;--s9:96px;
+  /* ── Type scale (Plus Jakarta Sans) ── */
+  --fs-2xs:0.6875rem;--fs-xs:0.75rem;--fs-sm:0.8125rem;--fs-base:0.9375rem;
+  --fs-md:1.125rem;--fs-lg:1.5rem;--fs-xl:2rem;--fs-2xl:2.75rem;--fs-3xl:3.5rem;
+  /* ── Radius (concentric) ── */
+  --r-outer:20px;--r-inner:calc(20px - 8px);--r-sm:8px;--r-xs:6px;
+  /* ── Timing ── */
+  --ease-out-expo:cubic-bezier(0.16,1,0.3,1);
+  --ease-out-quart:cubic-bezier(0.25,1,0.5,1);
+  --spring:cubic-bezier(0.32,0.72,0,1);
+}
+
+html{font-size:16px;scroll-behavior:smooth}
+body{
+  font-family:"Plus Jakarta Sans",-apple-system,system-ui,sans-serif;
+  background:var(--bg);color:var(--tx1);
+  line-height:1.6;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  font-weight:400;
+}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ═══ Layout shell ═══ */
+.shell{display:flex;height:100vh;overflow:hidden}
+
+/* ═══ Sidebar ═══ */
+.side{
+  width:320px;flex-shrink:0;
+  background:var(--sf0);
+  padding:0;
+  overflow-y:auto;display:flex;flex-direction:column;
+  box-shadow:1px 0 0 oklch(20% 0.003 142),4px 0 16px oklch(5% 0 0 / 0.3);
+}
+/* ── Sidebar Header ── */
+.lp-head{padding:24px 20px 18px;box-shadow:0 1px 0 oklch(18% 0.003 142)}
+.lp-icon{
+  width:38px;height:38px;border-radius:50%;
+  background:oklch(14% 0.03 142);
+  border:1.5px solid oklch(73% 0.18 142 / 0.25);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:var(--s3);color:var(--brand);font-size:16px;font-weight:800;
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+}
+.lp-title{
+  font-size:var(--fs-md);font-weight:800;color:var(--tx1);
+  letter-spacing:-0.02em;line-height:1.2;text-wrap:balance;
+}
+.lp-sub{font-size:var(--fs-2xs);color:var(--tx3);line-height:1.6;margin-top:var(--s2)}
+
+/* ── Sidebar sections ── */
+.lp-section{padding:16px 20px;box-shadow:0 1px 0 oklch(18% 0.003 142)}
+.lp-section-title{
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:9px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--tx4);margin-bottom:var(--s3);font-weight:600;
+}
+
+/* ── Form fields ── */
+.field{margin-bottom:var(--s3)}
+.field:last-child{margin-bottom:0}
+.field label{
+  display:block;font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:9px;letter-spacing:1px;text-transform:uppercase;
+  color:var(--brand);margin-bottom:5px;font-weight:600;
+}
+.field label .req{color:var(--red);margin-left:2px}
+.field input,.field select,.field textarea{
+  width:100%;background:var(--bg);
+  border:1px solid oklch(22% 0.003 142);
+  color:var(--tx1);padding:9px 12px;font-size:12px;
+  font-family:"Plus Jakarta Sans",sans-serif;
+  border-radius:var(--r-sm);outline:none;
+  transition:border-color .2s var(--ease-out-expo),box-shadow .2s var(--ease-out-expo);
+}
+.field input:focus,.field select:focus,.field textarea:focus{
+  border-color:var(--brand);
+  box-shadow:0 0 0 2px oklch(73% 0.18 142 / 0.15);
+}
+.field select{
+  cursor:pointer;-webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23484b5c'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;
+}
+.field textarea{resize:vertical;min-height:56px;font-size:11px}
+.field input::placeholder,.field textarea::placeholder{color:var(--tx4)}
+/* Mode toggle (single / multi) */
+.mode-toggle{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.mode-btn{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:8px 6px;background:var(--bg);
+  border:1px solid oklch(22% 0.003 142);
+  color:var(--tx3);cursor:pointer;font-size:11px;
+  border-radius:var(--r-sm);font-family:inherit;font-weight:600;
+  transition:all .2s var(--ease-out-expo);
+}
+.mode-btn:hover{border-color:oklch(30% 0.004 142);color:var(--tx2)}
+.mode-btn:active{transform:scale(0.97)}
+.mode-btn.on{
+  border-color:var(--brand);color:var(--brand);
+  background:var(--brand-bg);
+  box-shadow:0 0 0 1px oklch(73% 0.18 142 / 0.12);
+}
+.mode-icon{display:flex;align-items:center;flex-shrink:0}
+.field-hint{font-size:10px;color:var(--tx4);margin-top:4px}
+
+/* ── Execute button ── */
+.btn-exec{
+  width:100%;padding:11px;margin-top:var(--s3);
+  background:var(--brand);color:var(--bg);
+  font-family:"Plus Jakarta Sans",sans-serif;
+  font-size:13px;font-weight:700;border:none;border-radius:var(--r-sm);
+  cursor:pointer;letter-spacing:0.02em;
+  transition:opacity .2s,transform .1s var(--ease-out-expo);
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  box-shadow:0 2px 8px oklch(73% 0.18 142 / 0.25),0 0 0 1px oklch(73% 0.18 142 / 0.1);
+}
+.btn-exec:hover{opacity:.9}
+.btn-exec:active{transform:scale(.97)}
+
+/* ── Methodology / info ── */
+.lp-info{padding:16px 20px;box-shadow:0 1px 0 oklch(18% 0.003 142)}
+.lp-info p{font-size:11px;color:var(--tx3);line-height:1.7}
+.lp-info strong{color:var(--tx1);font-weight:600}
+
+/* ── Tier legend ── */
+.legend{display:flex;flex-direction:column;gap:var(--s2);margin-top:2px}
+.legend-item{display:flex;align-items:center;gap:var(--s2)}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.legend-name{font-size:11px;font-weight:700;min-width:60px}
+.legend-desc{font-size:10px;color:var(--tx4)}
+
+/* ── Sidebar footer ── */
+.lp-foot{margin-top:auto;padding:14px 20px;text-align:center;
+  box-shadow:0 -1px 0 oklch(18% 0.003 142)}
+.lp-foot span{font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:9px;color:var(--tx4);letter-spacing:0.5px}
+
+/* ── Stock selector (inside params) ── */
+.side-label{font-size:var(--fs-2xs);color:var(--tx3);text-transform:uppercase;
+  letter-spacing:0.12em;font-weight:700;margin-bottom:var(--s2)}
+.side-stocks{display:flex;flex-direction:column;gap:var(--s2)}
+.side-stock{
+  display:flex;align-items:center;gap:var(--s3);cursor:pointer;
+  padding:var(--s2) var(--s3);border-radius:var(--r-xs);
+  transition:background .2s var(--ease-out-expo);
+}
+.side-stock:hover{background:oklch(12% 0.004 142)}
+.side-stock:active{transform:scale(0.98)}
+.side-stock input{width:14px;height:14px;accent-color:var(--brand);cursor:pointer}
+.side-stock-info{flex:1;display:flex;justify-content:space-between;align-items:center}
+.side-stock-tk{font-size:var(--fs-sm);font-weight:700;color:var(--tx1);
+  font-family:"JetBrains Mono",ui-monospace,monospace}
+.side-stock-price{font-size:var(--fs-xs);color:var(--tx2);font-weight:500;
+  font-variant-numeric:tabular-nums;font-family:"JetBrains Mono",ui-monospace,monospace}
+.side-stock-sc{font-size:var(--fs-xs);font-weight:700;font-variant-numeric:tabular-nums;
+  font-family:"JetBrains Mono",ui-monospace,monospace}
+
+/* ── Language toggle ── */
+/* ── Global language toggle (right end of tab bar) ── */
+.lang-toggle{margin-left:auto;display:flex;gap:2px;align-items:center;
+  background:var(--sf1);border-radius:var(--r-xs);padding:2px;flex-shrink:0}
+.lang-toggle button{
+  padding:4px 10px;
+  background:transparent;border:none;
+  color:var(--tx3);cursor:pointer;font-size:var(--fs-2xs);
+  border-radius:calc(var(--r-xs) - 2px);
+  transition:all .15s var(--ease-out-expo);font-family:inherit;font-weight:600;
+}
+.lang-toggle button:hover{color:var(--tx2)}
+.lang-toggle button:active{transform:scale(0.96)}
+.lang-toggle button.active{
+  background:var(--sf3);color:var(--tx1);font-weight:700;
+}
+
+/* ═══ Main panel ═══ */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── Tab bar ── */
+.tabs{
+  display:flex;gap:0;background:var(--sf0);
+  padding:0 var(--s6);flex-shrink:0;
+  box-shadow:0 1px 0 oklch(20% 0.003 142);
+}
+.tab{
+  padding:var(--s4) var(--s5);background:none;border:none;
+  color:var(--tx3);cursor:pointer;font-size:var(--fs-sm);font-weight:600;
+  border-bottom:2px solid transparent;
+  transition:all .2s var(--ease-out-expo);font-family:inherit;
+  letter-spacing:0.01em;position:relative;
+}
+.tab:hover{color:var(--tx1)}
+.tab:active{transform:scale(0.96)}
+.tab.on{color:var(--brand);border-bottom-color:var(--brand)}
+.tab.on::after{
+  content:'';position:absolute;bottom:-1px;left:20%;right:20%;height:2px;
+  background:var(--brand);filter:blur(4px);opacity:0.6;
+}
+
+/* ── Scroll area ── */
+.scroll{flex:1;overflow-y:auto;padding:var(--s7) var(--s7) var(--s9)}
+.panel{display:none}.panel.on{display:block}
+
+/* ═══ K-line Chart ═══ */
+.kline-wrap{
+  /* Double-bezel: outer shell */
+  background:oklch(10% 0.005 142);
+  padding:var(--s2);
+  border-radius:var(--r-outer);
+  box-shadow:
+    0 0 0 1px oklch(100% 0 0 / 0.03),
+    0 2px 4px oklch(5% 0 0 / 0.2),
+    0 8px 24px oklch(5% 0 0 / 0.15);
+  margin-bottom:var(--s6);
+}
+.kline-inner{
+  /* Inner core */
+  background:var(--sf1);
+  border-radius:var(--r-inner);
+  padding:var(--s5);
+  box-shadow:inset 0 1px 1px oklch(100% 0 0 / 0.04);
+}
+.kline-header{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:var(--s4);gap:var(--s3);
+}
+.kline-left{display:flex;align-items:center;gap:var(--s3);flex:1;min-width:0}
+.kline-title{font-size:var(--fs-sm);font-weight:700;color:var(--tx1);white-space:nowrap}
+.kline-tabs{display:flex;gap:var(--s1)}
+.kline-tab{
+  padding:var(--s1) var(--s3);background:var(--sf2);border:none;
+  color:var(--tx3);cursor:pointer;font-size:var(--fs-2xs);
+  border-radius:var(--r-xs);font-family:inherit;font-weight:600;
+  transition:all .15s var(--ease-out-expo);
+}
+.kline-tab:active{transform:scale(0.96)}
+.kline-tab.on{background:var(--brand);color:var(--bg)}
+/* Period selector pills */
+.kline-periods{display:flex;gap:2px;background:var(--sf1);border-radius:var(--r-xs);padding:2px;flex-shrink:0}
+.kp-btn{
+  padding:3px 10px;background:transparent;border:none;
+  color:var(--tx3);cursor:pointer;font-size:var(--fs-2xs);
+  border-radius:calc(var(--r-xs) - 2px);font-family:inherit;font-weight:600;
+  transition:all .15s var(--ease-out-expo);white-space:nowrap;
+}
+.kp-btn:hover{color:var(--tx2)}
+.kp-btn.on{background:var(--sf3);color:var(--tx1)}
+/* OHLCV info bar between header and canvas */
+.kline-ohlcv{
+  height:20px;
+  display:flex;align-items:center;gap:16px;
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:11px;font-variant-numeric:tabular-nums;
+  color:var(--tx3);padding:0 2px;
+  white-space:nowrap;overflow:hidden;
+}
+.kline-canvas{
+  width:100%;height:220px;border-radius:var(--r-xs);
+  background:var(--bg);
+}
+
+/* ═══ Verdict / Conclusion at top ═══ */
+.verdict-hero{
+  margin-bottom:var(--s6);
+}
+.vrow{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s4);margin-bottom:var(--s6)}
+
+/* ── Double-bezel verdict card ── */
+.vcard-shell{
+  background:oklch(10% 0.005 142);
+  padding:var(--s2);
+  border-radius:var(--r-outer);
+  box-shadow:
+    0 0 0 1px oklch(100% 0 0 / 0.03),
+    0 1px 3px oklch(5% 0 0 / 0.2),
+    0 4px 16px oklch(5% 0 0 / 0.12);
+  transition:transform .3s var(--spring),box-shadow .3s var(--spring);
+}
+.vcard-shell:hover{
+  transform:translateY(-3px);
+  box-shadow:
+    0 0 0 1px oklch(100% 0 0 / 0.05),
+    0 4px 12px oklch(5% 0 0 / 0.25),
+    0 12px 32px oklch(5% 0 0 / 0.2);
+}
+.vcard{
+  padding:var(--s5);padding-top:calc(var(--s5) + 2px);
+  background:var(--sf1);
+  border-radius:var(--r-inner);
+  position:relative;overflow:visible;
+  box-shadow:inset 0 1px 1px oklch(100% 0 0 / 0.04);
+  /* Top accent via box-shadow instead of ::before, so we can keep overflow:visible */
+  box-shadow:inset 0 2px 0 var(--stock-clr,var(--brand)),inset 0 1px 1px oklch(100% 0 0 / 0.04);
+}
+.vc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:var(--s4)}
+.vc-tk{font-size:var(--fs-lg);font-weight:800;color:var(--tx1);
+  font-family:"JetBrains Mono",ui-monospace,monospace;letter-spacing:-0.02em}
+.vc-name{font-size:var(--fs-2xs);color:var(--tx3);margin-top:2px;font-weight:500}
+.vc-rank{
+  font-size:var(--fs-2xs);color:var(--tx3);font-weight:600;
+  padding:var(--s1) var(--s2);
+  background:var(--sf2);border-radius:var(--r-xs);
+}
+/* Stock price — meeting request: prominently show price */
+.vc-price{
+  font-size:var(--fs-xl);font-weight:700;color:var(--tx1);
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-variant-numeric:tabular-nums;
+  line-height:1;margin-bottom:var(--s2);
+}
+/* Target price row — enlarged, with tooltip */
+.vc-target-row{
+  display:flex;align-items:center;gap:var(--s3);
+  margin-bottom:var(--s4);position:relative;
+}
+.vc-target-price{
+  font-size:var(--fs-base);font-weight:700;color:var(--brand);
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-variant-numeric:tabular-nums;
+}
+.vc-target-label{
+  font-size:var(--fs-2xs);color:var(--tx3);font-weight:500;
+}
+.vc-upside{
+  font-size:var(--fs-xs);font-weight:700;color:var(--brand);
+  padding:2px 8px;background:oklch(73% 0.18 142 / 0.1);
+  border-radius:var(--r-xs);
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+}
+/* Info icon for tooltip — position:relative so tooltip anchors here */
+.vc-info{
+  width:18px;height:18px;border-radius:50%;
+  background:var(--sf2);color:var(--tx3);
+  font-size:10px;font-weight:700;
+  display:inline-flex;align-items:center;justify-content:center;
+  cursor:help;position:relative;flex-shrink:0;
+  border:1px solid oklch(25% 0.003 142);
+  transition:all .15s var(--ease-out-expo);
+}
+.vc-info:hover{background:var(--brand);color:var(--bg);border-color:var(--brand)}
+/* Tooltip — opens DOWNWARD via JS positioning to avoid any clipping */
+.vc-tooltip{
+  display:none;position:fixed;
+  width:340px;padding:var(--s4) var(--s5);
+  background:oklch(14% 0.006 142);
+  border:1px solid oklch(24% 0.005 142);
+  border-radius:var(--r-sm);
+  box-shadow:0 4px 12px oklch(5% 0 0 / 0.3),0 16px 40px oklch(3% 0 0 / 0.5);
+  z-index:9999;
+  font-size:11px;color:var(--tx2);line-height:1.6;
+  pointer-events:none;
+  white-space:normal;word-break:break-word;
+}
+.vc-tooltip .tt-title{
+  font-size:12px;font-weight:700;color:var(--tx1);
+  margin-bottom:var(--s3);padding-bottom:var(--s2);
+  box-shadow:0 1px 0 oklch(22% 0.003 142);
+}
+.vc-tooltip .tt-list{
+  display:flex;flex-direction:column;gap:6px;
+}
+.vc-tooltip .tt-item{
+  display:flex;gap:var(--s3);align-items:baseline;
+}
+.vc-tooltip .tt-dot{
+  width:5px;height:5px;border-radius:50%;background:var(--brand);
+  flex-shrink:0;position:relative;top:1px;
+}
+.vc-tooltip .tt-k{color:var(--tx3);min-width:56px;flex-shrink:0;font-weight:600;
+  font-size:9px;text-transform:uppercase;letter-spacing:0.05em}
+.vc-tooltip .tt-v{color:var(--tx1);font-weight:500;font-size:11px;flex:1;min-width:0}
+.vc-tooltip .tt-v strong{color:var(--brand);font-weight:700}
+/* tooltip shown via JS */
+.vc-tier{font-size:var(--fs-xs);font-weight:800;text-transform:uppercase;letter-spacing:0.08em;
+  margin-bottom:var(--s1)}
+.vc-score{font-size:var(--fs-lg);font-weight:800;color:var(--stock-clr,var(--brand));
+  font-family:"JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;
+  line-height:1.1;margin-bottom:var(--s4)}
+.vc-bar{height:3px;background:var(--sf3);border-radius:2px;overflow:hidden;position:relative;
+  margin-bottom:var(--s4)}
+.vc-bar-zero{position:absolute;left:50%;top:0;width:1px;height:100%;background:var(--tx4)}
+.vc-bar-fill{height:100%;position:absolute;top:0;border-radius:2px;
+  transition:width .6s var(--ease-out-expo)}
+.vc-stats{display:flex;flex-direction:column;gap:var(--s2)}
+.vc-stat{display:flex;justify-content:space-between;font-size:var(--fs-2xs);color:var(--tx3)}
+.vc-stat-v{color:var(--tx1);font-weight:700;font-variant-numeric:tabular-nums;
+  font-family:"JetBrains Mono",ui-monospace,monospace}
+
+/* ═══ Section labels ═══ */
+.sec-title{
+  font-size:var(--fs-md);font-weight:800;color:var(--tx1);
+  margin-bottom:var(--s5);padding-bottom:var(--s3);
+  text-wrap:balance;letter-spacing:-0.01em;
+  /* Subtle shadow line instead of border */
+  box-shadow:0 1px 0 oklch(22% 0.003 142);
+}
+.sec-sub{font-size:var(--fs-xs);font-weight:400;color:var(--tx3);margin-top:var(--s1);line-height:1.5}
+
+/* ═══ Dimension Breakdown (card-based) ═══ */
+.dc-legend{
+  display:flex;align-items:center;gap:var(--s4);
+  margin-bottom:var(--s5);padding:var(--s3) var(--s4);
+  background:var(--sf0);border-radius:var(--r-sm);flex-wrap:wrap;
+}
+.dc-legend-label{font-size:var(--fs-2xs);color:var(--tx3);font-weight:600;white-space:nowrap}
+.dc-legend-bar-wrap{flex:1;min-width:200px}
+.dc-legend-bar{
+  height:6px;border-radius:3px;
+  background:linear-gradient(90deg,oklch(65% 0.2 25) 0%,oklch(75% 0.15 85) 50%,oklch(73% 0.18 142) 100%);
+}
+.dc-legend-labels{display:flex;justify-content:space-between;font-size:var(--fs-2xs);color:var(--tx3);margin-top:2px}
+
+.dc-list{display:flex;flex-direction:column;gap:var(--s3);margin-bottom:var(--s6)}
+
+.dc{
+  background:var(--sf0);border-radius:var(--r-outer);
+  overflow:hidden;transition:background .2s var(--ease-out-expo);
+}
+.dc:hover{background:oklch(11% 0.006 142)}
+
+.dc-head{
+  display:grid;grid-template-columns:1fr auto 28px;
+  align-items:center;gap:var(--s5);
+  padding:var(--s5);cursor:pointer;user-select:none;
+}
+.dc-left{min-width:0}
+.dc-title{
+  font-size:var(--fs-base);font-weight:700;color:var(--tx1);
+  display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;
+}
+.dc-wt{
+  display:inline-flex;align-items:center;
+  font-size:var(--fs-2xs);font-weight:600;
+  color:var(--brand);background:var(--brand-bg);
+  padding:1px 8px;border-radius:99px;line-height:1.6;
+}
+.dc-desc{font-size:var(--fs-xs);color:var(--tx3);margin-top:2px;line-height:1.4}
+
+/* Race bars */
+.dc-race{display:flex;flex-direction:column;gap:6px;min-width:260px;max-width:320px}
+.rb-row{display:grid;grid-template-columns:52px 1fr 52px;align-items:center;gap:var(--s2)}
+.rb-tk{
+  font-size:var(--fs-2xs);font-weight:700;text-align:right;color:var(--tx3);
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+}
+.rb-tk-best{color:var(--tx1)}
+.rb-track{height:14px;background:var(--sf2);border-radius:7px;overflow:hidden;position:relative}
+.rb-fill{height:100%;border-radius:7px;position:relative;
+  transition:width .6s var(--spring);display:flex;align-items:center;justify-content:flex-end}
+.rb-crown{
+  font-size:8px;font-weight:800;color:var(--bg);
+  background:oklch(82% 0.16 90);padding:0 4px;border-radius:4px;
+  margin-right:3px;letter-spacing:0.04em;text-transform:uppercase;
+  line-height:1.5;white-space:nowrap;
+}
+.rb-sc{
+  font-size:var(--fs-2xs);font-weight:700;text-align:right;
+  font-family:"JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;
+}
+
+/* Chevron */
+.dc-chv{
+  width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+  border-radius:50%;background:var(--sf2);color:var(--tx3);flex-shrink:0;
+  transition:transform .3s var(--ease-out-expo),background .2s,color .2s;
+}
+.dc[data-open="true"] .dc-chv{
+  transform:rotate(180deg);background:var(--brand-bg);color:var(--brand);
+}
+
+/* Expandable body */
+.dc-body{
+  max-height:0;overflow:hidden;
+  transition:max-height .4s var(--ease-out-expo),opacity .3s;opacity:0;
+}
+.dc[data-open="true"] .dc-body{max-height:800px;opacity:1}
+.dc-body-inner{padding:0 var(--s5) var(--s5);display:flex;flex-direction:column;gap:var(--s4)}
+
+/* Insight callout */
+.dc-insight{
+  background:var(--brand-bg);border-radius:var(--r-sm);padding:var(--s4);
+  border-left:3px solid var(--brand);
+}
+.dc-insight-tag{
+  font-size:var(--fs-2xs);color:var(--brand);font-weight:700;
+  text-transform:uppercase;letter-spacing:0.08em;margin-bottom:var(--s2);
+}
+.dc-insight p{font-size:var(--fs-xs);color:var(--tx2);line-height:1.65}
+
+/* Detail grid (shared with old bk-* classes) */
+.bk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s3)}
+.bk-col{
+  background:var(--sf1);padding:var(--s4);border-radius:var(--r-sm);
+  box-shadow:0 1px 3px oklch(5% 0 0 / 0.15),inset 0 1px 0 oklch(100% 0 0 / 0.02);
+}
+.bk-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--s3);
+  padding-bottom:var(--s2);box-shadow:0 1px 0 oklch(22% 0.003 142)}
+.bk-tk{font-weight:800;font-size:var(--fs-sm);color:var(--tx1);
+  font-family:"JetBrains Mono",ui-monospace,monospace}
+.bk-sc{font-weight:800;font-size:var(--fs-sm);font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-variant-numeric:tabular-nums}
+.bk-calc{font-size:var(--fs-2xs);color:var(--tx3);margin-bottom:var(--s3);
+  padding:var(--s2) var(--s3);background:var(--bg);border-radius:var(--r-xs);
+  font-family:"JetBrains Mono",ui-monospace,monospace;line-height:1.5}
+.drow{display:flex;justify-content:space-between;padding:var(--s1) 0;
+  box-shadow:0 1px 0 oklch(20% 0.003 142);font-size:var(--fs-2xs)}
+.drow:last-child{box-shadow:none}
+.dk{color:var(--tx3)}.dv{color:var(--tx1);font-weight:600;font-variant-numeric:tabular-nums;
+  font-family:"JetBrains Mono",ui-monospace,monospace}
+
+/* ═══ Quick takes ═══ */
+.qt-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--s4);margin-bottom:var(--s6)}
+.qt{
+  background:var(--sf1);padding:var(--s5);border-radius:var(--r-sm);
+  box-shadow:0 1px 3px oklch(5% 0 0 / 0.15),inset 0 1px 0 oklch(100% 0 0 / 0.02);
+}
+.qt-hl{font-size:var(--fs-sm);font-weight:700;color:var(--tx1);line-height:1.4;
+  margin-bottom:var(--s4);text-wrap:balance}
+.qt-li{font-size:var(--fs-2xs);color:var(--tx2);line-height:1.5;padding:var(--s2) 0;
+  padding-left:var(--s4);position:relative}
+.qt-li::before{content:'→';position:absolute;left:0;color:var(--brand-dim)}
+
+/* ═══ GOOGL Deep Dive ═══ */
+.hero{margin-bottom:var(--s6)}
+.hero-row{display:flex;gap:var(--s6);align-items:flex-end;margin-bottom:var(--s5)}
+.hero-verdict{flex-shrink:0}
+.hero-tier{font-size:var(--fs-xl);font-weight:800;text-transform:uppercase;letter-spacing:0.02em;
+  line-height:1}
+.hero-score{font-size:var(--fs-2xl);font-weight:800;
+  font-family:"JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;
+  line-height:1;margin-top:var(--s2)}
+.hero-price{
+  font-size:var(--fs-3xl);font-weight:800;color:var(--tx1);
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-variant-numeric:tabular-nums;line-height:1;margin-top:var(--s3);
+}
+.hero-meta{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s3)}
+.hero-m{
+  background:var(--sf1);padding:var(--s4);border-radius:var(--r-sm);
+  box-shadow:0 1px 3px oklch(5% 0 0 / 0.15),inset 0 1px 0 oklch(100% 0 0 / 0.02);
+}
+.hero-mk{font-size:var(--fs-2xs);color:var(--tx3);text-transform:uppercase;letter-spacing:0.08em;
+  font-weight:700;margin-bottom:var(--s1)}
+.hero-mv{font-size:var(--fs-md);font-weight:800;color:var(--brand);
+  font-variant-numeric:tabular-nums;font-family:"JetBrains Mono",ui-monospace,monospace}
+.hero-bar{height:4px;background:var(--sf2);border-radius:2px;overflow:hidden;position:relative;
+  margin-bottom:var(--s6)}
+.hero-bar-zero{position:absolute;left:50%;top:0;width:1px;height:100%;background:var(--tx4)}
+.hero-bar-fill{height:100%;position:absolute;top:0;border-radius:2px;
+  transition:width .6s var(--ease-out-expo)}
+
+/* ── Key arguments ── */
+.args{display:grid;grid-template-columns:1fr 1fr;gap:var(--s4);margin-bottom:var(--s6)}
+.arg-col{
+  background:var(--sf1);padding:var(--s5);border-radius:var(--r-sm);
+  box-shadow:0 1px 3px oklch(5% 0 0 / 0.15),inset 0 1px 0 oklch(100% 0 0 / 0.02);
+}
+.arg-col h3{font-size:var(--fs-xs);font-weight:800;color:var(--brand);margin-bottom:var(--s4);
+  text-transform:uppercase;letter-spacing:0.06em}
+.arg-col.caveat h3{color:var(--red)}
+.arg-item{font-size:var(--fs-2xs);color:var(--tx2);line-height:1.5;
+  padding:var(--s2) 0 var(--s2) var(--s4);position:relative;
+  box-shadow:0 1px 0 oklch(17% 0.003 142)}
+.arg-item:last-child{box-shadow:none}
+.arg-item::before{content:'→';position:absolute;left:0;color:var(--brand-dim);font-size:var(--fs-2xs)}
+.caveat .arg-item::before{color:var(--red)}
+
+/* ── Dimension cards (double-bezel) ── */
+.dim-shell{
+  background:oklch(10% 0.005 142);
+  padding:var(--s1);
+  border-radius:var(--r-outer);
+  box-shadow:0 0 0 1px oklch(100% 0 0 / 0.02),0 1px 3px oklch(5% 0 0 / 0.15);
+  margin-bottom:var(--s3);
+  transition:box-shadow .3s var(--spring);
+}
+.dim-shell:hover{
+  box-shadow:0 0 0 1px oklch(100% 0 0 / 0.04),0 2px 8px oklch(5% 0 0 / 0.2);
+}
+.dim{
+  background:var(--sf1);border-radius:calc(var(--r-outer) - var(--s1));overflow:hidden;
+  box-shadow:inset 0 1px 0 oklch(100% 0 0 / 0.03);
+}
+.dim-head{display:flex;align-items:center;gap:var(--s4);padding:var(--s4) var(--s5);cursor:pointer;
+  transition:background .15s var(--ease-out-expo)}
+.dim-head:hover{background:var(--sf2)}
+.dim-head:active{transform:scale(0.998)}
+.dim-idx{font-size:var(--fs-lg);font-weight:800;color:var(--tx4);
+  font-family:"JetBrains Mono",ui-monospace,monospace;min-width:36px}
+.dim-info{flex:1}
+.dim-name{font-size:var(--fs-sm);font-weight:700;color:var(--tx1);margin-bottom:2px}
+.dim-tags{display:flex;gap:var(--s2);align-items:center}
+.dim-wt{font-size:var(--fs-2xs);color:var(--tx3);font-weight:600}
+.dim-sc{font-size:var(--fs-2xs);font-weight:800;padding:2px 8px;border-radius:var(--r-xs);
+  font-family:"JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.dim-chv{font-size:11px;color:var(--tx3);transition:transform .25s var(--ease-out-expo);margin-left:auto}
+.dim[data-open="1"] .dim-chv{transform:rotate(90deg)}
+.dim-one{font-size:var(--fs-2xs);color:var(--tx2);padding:0 var(--s5) var(--s3);line-height:1.6}
+.dim-gauge{padding:0 var(--s5) var(--s4)}
+.dim-gt{height:3px;background:var(--sf3);border-radius:2px;position:relative;overflow:hidden}
+.dim-gz{position:absolute;left:50%;top:0;width:1px;height:100%;background:var(--tx4)}
+.dim-gf{height:100%;position:absolute;top:0;border-radius:2px;
+  transition:width .5s var(--ease-out-expo)}
+.dim-gl{display:flex;justify-content:space-between;font-size:9px;color:var(--tx4);
+  margin-top:3px;font-family:"JetBrains Mono",ui-monospace,monospace}
+/* Detail */
+.dim-detail{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s var(--ease-out-expo)}
+.dim[data-open="1"] .dim-detail{grid-template-rows:1fr}
+.dim-detail-inner{overflow:hidden}
+.dim-detail-content{padding:var(--s4) var(--s5) var(--s5);
+  box-shadow:0 -1px 0 oklch(22% 0.003 142);display:flex;flex-direction:column;gap:var(--s4)}
+.dd-label{font-size:var(--fs-2xs);color:var(--brand);font-weight:700;
+  text-transform:uppercase;letter-spacing:0.08em;margin-bottom:var(--s1)}
+.dd-text{font-size:var(--fs-2xs);color:var(--tx2);line-height:1.65}
+.dd-calc{font-size:var(--fs-2xs);color:var(--tx3);
+  padding:var(--s3);background:var(--bg);border-radius:var(--r-xs);
+  font-family:"JetBrains Mono",ui-monospace,monospace;line-height:1.5}
+.dd-table{display:flex;flex-direction:column}
+.dd-tr{display:flex;justify-content:space-between;padding:var(--s2) 0;
+  box-shadow:0 1px 0 oklch(17% 0.003 142);font-size:var(--fs-2xs)}
+.dd-tr:last-child{box-shadow:none}
+.dd-tk{color:var(--tx3)}.dd-tv{color:var(--tx1);font-weight:600;font-variant-numeric:tabular-nums;
+  font-family:"JetBrains Mono",ui-monospace,monospace}
+
+/* ═══ Stock visibility toggles ═══ */
+[data-hide-googl] [data-ticker="GOOGL"],
+[data-hide-nvda] [data-ticker="NVDA"],
+[data-hide-aapl] [data-ticker="AAPL"]{display:none}
+[data-hide-googl] .col-googl,
+[data-hide-nvda] .col-nvda,
+[data-hide-aapl] .col-aapl{display:none}
+
+/* ═══ Entrance animation (IntersectionObserver driven) ═══ */
+.reveal{opacity:0;transform:translateY(16px);
+  transition:opacity .5s var(--ease-out-expo),transform .5s var(--ease-out-expo)}
+.reveal.visible{opacity:1;transform:none}
+.reveal:nth-child(1){transition-delay:0s}
+.reveal:nth-child(2){transition-delay:.06s}
+.reveal:nth-child(3){transition-delay:.12s}
+.reveal:nth-child(4){transition-delay:.18s}
+.reveal:nth-child(5){transition-delay:.24s}
+.reveal:nth-child(6){transition-delay:.28s}
+.reveal:nth-child(7){transition-delay:.32s}
+.reveal:nth-child(8){transition-delay:.36s}
+
+/* ═══ Scrollbar ═══ */
+.scroll::-webkit-scrollbar{width:6px}
+.scroll::-webkit-scrollbar-track{background:transparent}
+.scroll::-webkit-scrollbar-thumb{background:oklch(25% 0.003 142);border-radius:3px}
+.scroll::-webkit-scrollbar-thumb:hover{background:oklch(30% 0.004 142)}
+.side::-webkit-scrollbar{width:4px}
+.side::-webkit-scrollbar-track{background:transparent}
+.side::-webkit-scrollbar-thumb{background:oklch(20% 0.003 142);border-radius:2px}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ═══ Sidebar ═══ -->
+<aside class="side">
+  <!-- Header: Skill identity -->
+  <div class="lp-head">
+    <div class="lp-icon">A</div>
+    <div class="lp-title"><span class="bi" data-en="Stock Analysis" data-zh="股票分析">Stock Analysis</span></div>
+    <div class="lp-sub"><span class="bi" data-en="8-dimension weighted scoring model. Combines earnings, fundamentals, analyst consensus, momentum, sector, historical patterns, market context, and sentiment." data-zh="8 维度加权评分模型。综合财报、基本面、分析师共识、动量、板块、历史模式、市场环境和情绪分析。">8-dimension weighted scoring model. Combines earnings, fundamentals, analyst consensus, momentum, sector, historical patterns, market context, and sentiment.</span></div>
+  </div>
+
+  <!-- Parameters: interactive form fields -->
+  <div class="lp-section">
+    <div class="lp-section-title"><span class="bi" data-en="Parameters" data-zh="参数">Parameters</span></div>
+    <div class="field">
+      <label><span class="bi" data-en="Analysis Mode" data-zh="分析模式">Analysis Mode</span></label>
+      <div class="mode-toggle" id="modeToggle">
+        <button class="mode-btn" data-mode="single" onclick="setMode('single',this)">
+          <span class="mode-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="3" y="2" width="8" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/></svg></span>
+          <span class="bi" data-en="Single Stock" data-zh="单股分析">Single Stock</span>
+        </button>
+        <button class="mode-btn on" data-mode="multi" onclick="setMode('multi',this)">
+          <span class="mode-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="5" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="8" y="3" width="5" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/></svg></span>
+          <span class="bi" data-en="Multi Compare" data-zh="多股对比">Multi Compare</span>
+        </button>
+      </div>
+    </div>
+    <div class="field">
+      <label><span class="bi" data-en="Ticker / Symbol" data-zh="股票代码">Ticker / Symbol</span><span class="req">*</span></label>
+      <input type="text" id="f-ticker" value="GOOGL, NVDA, AAPL" placeholder="e.g. GOOGL, NVDA, AAPL" spellcheck="false">
+      <div class="field-hint" id="tickerHint"><span class="bi" data-en="Separate multiple tickers with commas" data-zh="多个代码用逗号分隔">Separate multiple tickers with commas</span></div>
+    </div>
+    <div class="field">
+      <label><span class="bi" data-en="Analysis Depth" data-zh="分析深度">Analysis Depth</span></label>
+      <select id="f-depth">
+        <option value="quick"><span class="bi" data-en="Quick (3 dimensions)" data-zh="快速 (3 维度)">Quick (3 dimensions)</span></option>
+        <option value="standard" selected><span class="bi" data-en="Standard (8 dimensions)" data-zh="标准 (8 维度)">Standard (8 dimensions)</span></option>
+        <option value="deep"><span class="bi" data-en="Deep (8 + sub-signals)" data-zh="深度 (8 + 子信号)">Deep (8 + sub-signals)</span></option>
+      </select>
+    </div>
+    <div class="field">
+      <label><span class="bi" data-en="Additional Notes" data-zh="附加说明">Additional Notes</span></label>
+      <textarea id="f-notes" placeholder="<span class="bi" data-en="Optional: extra analysis requirements..." data-zh="可选：额外分析要求...">Optional: extra analysis requirements...</span>"></textarea>
+    </div>
+    <button class="btn-exec" onclick="executeAnalysis()">▸ <span class="bi" data-en="Execute Analysis" data-zh="执行分析">Execute Analysis</span></button>
+  </div>
+
+  <!-- Methodology -->
+  <div class="lp-info">
+    <div class="lp-section-title"><span class="bi" data-en="Methodology" data-zh="分析方法">Methodology</span></div>
+    <p><span class="bi-rich" data-rich-en="Score = weighted sum of 8 dimensions, each scored −1 to +1. Weights: Earnings 30%, Fundamentals 20%, Analyst 20%, Sector 15%, Momentum 15%, History 10%, Market 10%, Sentiment 10%. Final score mapped to 7 tiers from <strong>Strong Sell</strong> to <strong>Strong Buy</strong>." data-rich-zh="总分 = 8 个维度的加权总和，每项 −1 到 +1。权重：财报 30%、基本面 20%、分析师 20%、板块 15%、动量 15%、历史 10%、市场 10%、情绪 10%。最终得分映射为 <strong>强烈卖出</strong> 到 <strong>强烈买入</strong> 7 个等级。">Score = weighted sum of 8 dimensions, each scored −1 to +1. Weights: Earnings 30%, Fundamentals 20%, Analyst 20%, Sector 15%, Momentum 15%, History 10%, Market 10%, Sentiment 10%. Final score mapped to 7 tiers from <strong>Strong Sell</strong> to <strong>Strong Buy</strong>.</span></p>
+  </div>
+
+  <!-- Stock filter checkboxes -->
+  <div class="lp-section">
+    <div class="lp-section-title"><span class="bi" data-en="Stock Filter" data-zh="股票筛选">Stock Filter</span></div>
+    <div class="side-stocks">
+      <label class="side-stock"><input type="checkbox" id="chk-nvda" checked onchange="toggleStock('NVDA')"><div class="side-stock-info"><span class="side-stock-tk">NVDA</span><span class="side-stock-price">$183.91</span><span class="side-stock-sc" style="color:#4ADE80">+0.413</span></div></label><label class="side-stock"><input type="checkbox" id="chk-googl" checked onchange="toggleStock('GOOGL')"><div class="side-stock-info"><span class="side-stock-tk">GOOGL</span><span class="side-stock-price">$317.32</span><span class="side-stock-sc" style="color:#4ADE80">+0.383</span></div></label><label class="side-stock"><input type="checkbox" id="chk-aapl" checked onchange="toggleStock('AAPL')"><div class="side-stock-info"><span class="side-stock-tk">AAPL</span><span class="side-stock-price">$260.49</span><span class="side-stock-sc" style="color:#4ADE80">+0.372</span></div></label>
+    </div>
+  </div>
+
+  <!-- Tier Legend -->
+  <div class="lp-section">
+    <div class="lp-section-title"><span class="bi" data-en="Tier Legend" data-zh="等级图例">Tier Legend</span></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#36DD0C"></div><span class="legend-name" style="color:#36DD0C">Strong Buy</span><span class="legend-desc"><span class="bi" data-en="Score ≥ +0.55" data-zh="分数 ≥ +0.55">Score ≥ +0.55</span></span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#4ADE80"></div><span class="legend-name" style="color:#4ADE80">Buy</span><span class="legend-desc"><span class="bi" data-en="+0.35 to +0.55" data-zh="+0.35 到 +0.55">+0.35 to +0.55</span></span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#878790"></div><span class="legend-name" style="color:#878790">Hold</span><span class="legend-desc"><span class="bi" data-en="−0.15 to +0.15" data-zh="−0.15 到 +0.15">−0.15 to +0.15</span></span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#F87171"></div><span class="legend-name" style="color:#F87171">Sell</span><span class="legend-desc"><span class="bi" data-en="−0.55 to −0.35" data-zh="−0.55 到 −0.35">−0.55 to −0.35</span></span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#DC2626"></div><span class="legend-name" style="color:#DC2626">Strong Sell</span><span class="legend-desc"><span class="bi" data-en="Score ≤ −0.55" data-zh="分数 ≤ −0.55">Score ≤ −0.55</span></span></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="lp-foot"><span>Powered by Antseer MCP · v6.3.0</span></div>
+</aside>
+
+<!-- ═══ Main ═══ -->
+<main class="main">
+  <nav class="tabs">
+    <button class="tab on" onclick="setTab('cmp')"><span class="bi" data-en="Multi-Stock Comparison" data-zh="多股对比">Multi-Stock Comparison</span></button>
+    <button class="tab" onclick="setTab('dd')"><span class="bi" data-en="GOOGL Deep Dive" data-zh="GOOGL 深度分析">GOOGL Deep Dive</span></button>
+    <div class="lang-toggle">
+      <button class="active" onclick="setLang('en')">EN</button>
+      <button onclick="setLang('zh')">中文</button>
+    </div>
+  </nav>
+
+  <div class="scroll" id="scrollArea">
+
+    <!-- ═══ Tab: Comparison ═══ -->
+    <div id="tab-cmp" class="panel on">
+
+      <!-- K-line chart at top (meeting request) -->
+      <div class="kline-wrap reveal">
+        <div class="kline-inner">
+          <div class="kline-header">
+            <div class="kline-left">
+              <span class="kline-title"><span class="bi" data-en="Price Chart" data-zh="K 线图">Price Chart</span></span>
+              <div class="kline-tabs">
+                <button class="kline-tab on" onclick="setKlineTicker('GOOGL',this)">GOOGL</button>
+                <button class="kline-tab" onclick="setKlineTicker('NVDA',this)">NVDA</button>
+                <button class="kline-tab" onclick="setKlineTicker('AAPL',this)">AAPL</button>
+              </div>
+            </div>
+            <div class="kline-periods">
+              <button class="kp-btn" onclick="setKlinePeriod('1m',this)"><span class="bi" data-en="1M" data-zh="1月">1M</span></button>
+              <button class="kp-btn on" onclick="setKlinePeriod('3m',this)"><span class="bi" data-en="3M" data-zh="3月">3M</span></button>
+              <button class="kp-btn" onclick="setKlinePeriod('6m',this)"><span class="bi" data-en="6M" data-zh="6月">6M</span></button>
+              <button class="kp-btn" onclick="setKlinePeriod('1y',this)"><span class="bi" data-en="1Y" data-zh="1年">1Y</span></button>
+            </div>
+          </div>
+          <div class="kline-ohlcv" id="klineOhlcv"></div>
+          <canvas id="klineCanvas" class="kline-canvas"></canvas>
+        </div>
+      </div>
+
+      <div class="vrow"><div class="vcard-shell reveal" data-ticker="NVDA">
+<article class="vcard" style="--stock-clr:#4ADE80">
+  <div class="vc-top">
+    <div><div class="vc-tk">NVDA</div><div class="vc-name">NVIDIA Corporation</div></div>
+    <div class="vc-rank"><span class="bi" data-en="#1" data-zh="第1">#1</span></div>
+  </div>
+  <div class="vc-price">$183.91</div>
+  <div class="vc-target-row">
+    <span class="vc-target-label"><span class="bi" data-en="Target" data-zh="目标价">Target</span></span>
+    <span class="vc-target-price">$268.22</span>
+    <span class="vc-upside">+45.8%</span>
+    <span class="vc-info">?<div class="vc-tooltip">
+      <div class="tt-title"><span class="bi" data-en="How is target price calculated?" data-zh="目标价如何计算？">How is target price calculated?</span></div>
+      <div class="tt-list">
+        <div class="tt-item"><div class="tt-dot"></div><span class="tt-k"><span class="bi" data-en="Source" data-zh="数据源">Source</span></span><span class="tt-v">Yahoo Finance targetMeanPrice</span></div>
+        <div class="tt-item"><div class="tt-dot"></div><span class="tt-k"><span class="bi" data-en="Method" data-zh="方法">Method</span></span><span class="tt-v"><span class="bi-rich" data-rich-en="Mean of <strong>56 analysts</strong> price targets" data-rich-zh="<strong>56 位分析师</strong>目标价均值">Mean of <strong>56 analysts</strong> price targets</span></span></div>
+        <div class="tt-item"><div class="tt-dot"></div><span class="tt-k"><span class="bi" data-en="Formula" data-zh="公式">Formula</span></span><span class="tt-v"><span class="bi" data-en="(target − current) ÷ current × 100%" data-zh="(目标价 − 当前价) ÷ 当前价 × 100%">(target − current) ÷ current × 100%</span></span></div>
+        <div class="tt-item"><div class="tt-dot"></div><span class="tt-k"><span class="bi" data-en="Rating" data-zh="评级">Rating</span></span><span class="tt-v"><strong>Strong Buy</strong></span></div>
+        <div class="tt-item"><div class="tt-dot"></div><span class="tt-k"><span class="bi" data-en="Result" data-zh="结果">Result</span></span><span class="tt-v"><span class="bi-rich" data-rich-en="$183.91 → <strong>$268.22</strong> (+45.8%)" data-rich-zh="$183.91 → <strong>$268.22</strong> (+45.8%)">$183.91 → <strong>$268.22</strong> (+45.8%)</span></span></div>
+      </div>
+    </div></span>
+  </div>
+  <div class="vc-tier" style="color:#4ADE80"><span class="bi" data-en="BUY" data-zh="买入">BUY</span></div>
+  <div class="vc-score">+0.413</div>
+  <div class="vc-bar"><div class="vc-bar-zero"></div>
+    <div class="vc-bar-fill" style="left:50.0%;width:20.6%;background:#4ADE80"></div></div>
+  <div class="vc-stats">
+    <div class="vc-stat"><span><span class="bi" data-en="Confidence" data-zh="置信度">Confidence</span></span><span class="vc-stat-v">41.3%</span></div>
+    <div class="vc-stat"><span><span class="bi" data-en="Completeness" data-zh="完整度">Completeness</span></span><span class="vc-stat-v">100%</span></div>
+    <div class="vc-stat"><span><span class="bi" data-en="Dimensions" data-zh="维度">Dimensions</span></span><span class="vc-stat-v">8/8</span></div>
+  </div>
+</article></div>
+<div class="vcard-shell reveal" data-ticker="GOOGL">
+<article class="vcard" style="--stock-clr:#4ADE80">
+  <div class="vc-top">
+    <div><div class="vc-tk">GOOGL</div><div class="vc-name">Alphabet Inc.</div></div>
+    <div class="vc-rank"><span class="bi" data-en="#2" data-zh="第2">#2</span></div>
+  </div>
+  <div class="vc-price">$317.32</div>
+  <div class="vc-target-row">
+    <span class="vc-target-label"><span class="bi" data-en="Target" data-zh="目标价">Target</span></span>
+    <span class="vc-target-price">$376.29</span>
+    <span class="vc-upside">+18.6%</span>
+    <span class="vc-info">?<div class="vc-tooltip">
+      <div class="tt-title"><span class="bi" data-en="How is target price calculated?" data-zh="目标价如何计算？">How is target price calculated?</span></div>
+      <div class="tt-list">
+        <div class="tt-item"><div class="tt-dot"></div><span class="tt-k"><span class="bi" data-en="Source" data-zh="数据源">Source</span></span><span class="tt-v">Yahoo Finance targetMeanPrice</span></div>
+        <div class="tt-item"><div class="tt-dot"></div><span class="tt-k"><span class="bi" data-en="Method" data-zh="方法">Method</span></span><span class="tt-v"><span class="bi-rich" data-rich-en="Mean of <strong>56 analysts</strong> price targets" data-rich-zh="<strong>56 位分析师</strong>目标价均值">Mean of <strong>56 analysts</strong> price targets</span></span></div>
+        <div class="tt-item"><div class="tt-dot"></div><span class="tt-k"><span class="bi" data-en="Formula" data-zh="公式">Formula</span></span><span class="tt-v"><span class="bi" data-en="(target − current) ÷ current × 100%" data-zh="(目标价 − 当前价) ÷ 当前价 × 100%">(target − current) ÷ current × 100%</span></span></div>
+        <div class="tt-item"><div class="tt-dot"></div><span class="tt-k"><span class="bi" data-en="Rating" data-zh="评级">Rating</span></span><span class="tt-v"><strong>Strong Buy</strong></span></div>
+        <div class="tt-item"><div class="tt-dot"></div><span class="tt-k"><span class="bi" data-en="Result" data-zh="结果">Result</span></span><span class="tt-v"><span class="bi-rich" data-rich-en="$317.32 → <strong>$376.29</strong> (+18.6%)" data-rich-zh="$317.32 → <strong>$376.29</strong> (+18.6%)">$317.32 → <strong>$376.29</strong> (+18.6%)</span></span></div>
+      </div>
+    </div></span>
+  </div>
+  <div class="vc-tier" style="color:#4ADE80"><span class="bi" data-en="BUY" data-zh="买入">BUY</span></div>
+  <div class="vc-score">+0.383</div>
+  <div class="vc-bar"><div class="vc-bar-zero"></div>
+    <div class="vc-bar-fill" style="left:50.0%;width:19.2%;background:#4ADE80"></div></div>
+  <div class="vc-stats">
+    <div class="vc-stat"><span><span class="bi" data-en="Confidence" data-zh="置信度">Confidence</span></span><span class="vc-stat-v">38.3%</span></div>
+    <div class="vc-stat"><span><span class="bi" data-en="Completeness" data-zh="完整度">Completeness</span></span><span class="vc-stat-v">100%</span></div>
+    <div class="vc-stat"><span><span class="bi" data-en="Dimensions" data-zh="维度">Dimensions</span></span><span class="vc-stat-v">8/8</span></div>
+  </div>
+</article></div>
+<div class="vcard-shell reveal" data-ticker="AAPL">
+<article class="vcard" style="--stock-clr:#4ADE80">
+  <div class="vc-top">
+    <div><div class="vc-tk">AAPL</div><div class="vc-name">Apple Inc.</div></div>
+    <div class="vc-rank"><span class="bi" data-en="#3" data-zh="第3">#3</span></div>
+  </div>
+  <div class="vc-price">$260.49</div>
+  <div class="vc-target-row">
+    <span class="vc-target-label"><span class="bi" data-en="Target" data-zh="目标价">Target</span></span>
+    <span class="vc-target-price">$296.12</span>
+    <span class="vc-upside">+13.7%</span>
+    <span class="vc-info">?<div class="vc-tooltip">
+      <div class="tt-title"><span class="bi" data-en="How is target price calculated?" data-zh="目标价如何计算？">How is target price calculated?</span></div>
+      <div class="tt-list">
+        <div class="tt-item"><div class="tt-dot"></div><span class="tt-k"><span class="bi" data-en="Source" data-zh="数据源">Source</span></span><span class="tt-v">Yahoo Finance targetMeanPrice</span></div>
+        <div class="tt-item"><div class="tt-dot"></div><span class="tt-k"><span class="bi" data-en="Method" data-zh="方法">Method</span></span><span class="tt-v"><span class="bi-rich" data-rich-en="Mean of <strong>40 analysts</strong> price targets" data-rich-zh="<strong>40 位分析师</strong>目标价均值">Mean of <strong>40 analysts</strong> price targets</span></span></div>
+        <div class="tt-item"><div class="tt-dot"></div><span class="tt-k"><span class="bi" data-en="Formula" data-zh="公式">Formula</span></span><span class="tt-v"><span class="bi" data-en="(target − current) ÷ current × 100%" data-zh="(目标价 − 当前价) ÷ 当前价 × 100%">(target − current) ÷ current × 100%</span></span></div>
+        <div class="tt-item"><div class="tt-dot"></div><span class="tt-k"><span class="bi" data-en="Rating" data-zh="评级">Rating</span></span><span class="tt-v"><strong>Buy</strong></span></div>
+        <div class="tt-item"><div class="tt-dot"></div><span class="tt-k"><span class="bi" data-en="Result" data-zh="结果">Result</span></span><span class="tt-v"><span class="bi-rich" data-rich-en="$260.49 → <strong>$296.12</strong> (+13.7%)" data-rich-zh="$260.49 → <strong>$296.12</strong> (+13.7%)">$260.49 → <strong>$296.12</strong> (+13.7%)</span></span></div>
+      </div>
+    </div></span>
+  </div>
+  <div class="vc-tier" style="color:#4ADE80"><span class="bi" data-en="BUY" data-zh="买入">BUY</span></div>
+  <div class="vc-score">+0.372</div>
+  <div class="vc-bar"><div class="vc-bar-zero"></div>
+    <div class="vc-bar-fill" style="left:50.0%;width:18.6%;background:#4ADE80"></div></div>
+  <div class="vc-stats">
+    <div class="vc-stat"><span><span class="bi" data-en="Confidence" data-zh="置信度">Confidence</span></span><span class="vc-stat-v">37.2%</span></div>
+    <div class="vc-stat"><span><span class="bi" data-en="Completeness" data-zh="完整度">Completeness</span></span><span class="vc-stat-v">100%</span></div>
+    <div class="vc-stat"><span><span class="bi" data-en="Dimensions" data-zh="维度">Dimensions</span></span><span class="vc-stat-v">8/8</span></div>
+  </div>
+</article></div></div>
+      <div class="sec-title reveal"><span class="bi" data-en="Dimension Breakdown" data-zh="维度拆解">Dimension Breakdown</span>
+        <div class="sec-sub"><span class="bi" data-en="The model scores each stock across 8 dimensions (−1 to +1). Higher is more bullish. Click any card for details." data-zh="模型从 8 个角度给每只股票打分（−1 到 +1），分数越高越看好。点击任意卡片可展开详情。">The model scores each stock across 8 dimensions (−1 to +1). Higher is more bullish. Click any card for details.</span></div>
+      </div>
+      <div class="dc-legend reveal">
+  <span class="dc-legend-label"><span class="bi" data-en="Score Guide" data-zh="得分含义">Score Guide</span></span>
+  <div class="dc-legend-bar-wrap">
+    <div class="dc-legend-bar"></div>
+    <div class="dc-legend-labels">
+      <span><span class="bi" data-en="−1 Bearish" data-zh="−1 看空">−1 Bearish</span></span>
+      <span><span class="bi" data-en="0 Neutral" data-zh="0 中性">0 Neutral</span></span>
+      <span><span class="bi" data-en="+1 Bullish" data-zh="+1 看多">+1 Bullish</span></span>
+    </div>
+  </div>
+</div><div class="dc-list"><div class="dc reveal" data-open="false">
+  <div class="dc-head" onclick="toggleDc(this)">
+    <div class="dc-left">
+      <div class="dc-title">
+        <span class="bi" data-en="Earnings Surprise" data-zh="财报超预期">Earnings Surprise</span>
+        <span class="dc-wt"><span class="bi" data-en="Weight 30%" data-zh="权重 30%">Weight 30%</span></span>
+      </div>
+      <div class="dc-desc"><span class="bi" data-en="How much actual earnings beat or missed Wall Street expectations" data-zh="实际盈利比华尔街预期高了多少——超预期越多，分数越高">How much actual earnings beat or missed Wall Street expectations</span></div>
+    </div>
+    <div class="dc-race"><div class="rb-row col-googl"><span class="rb-tk">GOOGL</span><div class="rb-track"><div class="rb-fill" style="width:85.0%;background:oklch(73% 0.18 142)"></div></div><span class="rb-sc" style="color:#36DD0C">+0.70</span></div><div class="rb-row col-nvda"><span class="rb-tk">NVDA</span><div class="rb-track"><div class="rb-fill" style="width:85.0%;background:oklch(73% 0.16 200)"></div></div><span class="rb-sc" style="color:#36DD0C">+0.70</span></div><div class="rb-row col-aapl"><span class="rb-tk">AAPL</span><div class="rb-track"><div class="rb-fill" style="width:85.0%;background:oklch(72% 0.14 280)"></div></div><span class="rb-sc" style="color:#36DD0C">+0.70</span></div></div>
+    <div class="dc-chv"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  </div>
+  <div class="dc-body">
+    <div class="dc-body-inner">
+      <div class="dc-insight">
+        <div class="dc-insight-tag"><span class="bi" data-en="Head-to-Head Insight" data-zh="对比洞察">Head-to-Head Insight</span></div>
+        <p><span class="bi" data-en="All three beat consensus in the same 5–7% range — a 3-way tie at +0.70. Surprise magnitude alone is not a differentiator here." data-zh="三只均以 5–7% 的幅度跑赢一致预期——呈 3 方平局 +0.70。超预期幅度本身并非差异化信号。">All three beat consensus in the same 5–7% range — a 3-way tie at +0.70. Surprise magnitude alone is not a differentiator here.</span></p>
+      </div>
+      <div class="bk-grid"><div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">GOOGL</span><span class="bk-sc" style="color:#36DD0C">+0.70</span></div>
+          <div class="bk-calc"><span class="bi" data-en="EPS $2.82 vs $2.64 → +6.82% → +0.70" data-zh="EPS $2.82 vs $2.64 → +6.82% → +0.70">EPS $2.82 vs $2.64 → +6.82% → +0.70</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="Actual EPS" data-zh="实际 EPS">Actual EPS</span></span><span class="dv">$2.82</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Expected" data-zh="预期">Expected</span></span><span class="dv">$2.64</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Surprise" data-zh="超预期">Surprise</span></span><span class="dv">+6.82%</span></div>
+        </div>
+<div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">NVDA</span><span class="bk-sc" style="color:#36DD0C">+0.70</span></div>
+          <div class="bk-calc"><span class="bi" data-en="EPS $1.62 vs $1.54 → +5.19% → +0.70" data-zh="EPS $1.62 vs $1.54 → +5.19% → +0.70">EPS $1.62 vs $1.54 → +5.19% → +0.70</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="Actual EPS" data-zh="实际 EPS">Actual EPS</span></span><span class="dv">$1.62</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Expected" data-zh="预期">Expected</span></span><span class="dv">$1.54</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Surprise" data-zh="超预期">Surprise</span></span><span class="dv">+5.19%</span></div>
+        </div>
+<div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">AAPL</span><span class="bk-sc" style="color:#36DD0C">+0.70</span></div>
+          <div class="bk-calc"><span class="bi" data-en="EPS $2.84 vs $2.67 → +6.37% → +0.70" data-zh="EPS $2.84 vs $2.67 → +6.37% → +0.70">EPS $2.84 vs $2.67 → +6.37% → +0.70</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="Actual EPS" data-zh="实际 EPS">Actual EPS</span></span><span class="dv">$2.84</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Expected" data-zh="预期">Expected</span></span><span class="dv">$2.67</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Surprise" data-zh="超预期">Surprise</span></span><span class="dv">+6.37%</span></div>
+        </div></div>
+    </div>
+  </div>
+</div>
+<div class="dc reveal" data-open="false">
+  <div class="dc-head" onclick="toggleDc(this)">
+    <div class="dc-left">
+      <div class="dc-title">
+        <span class="bi" data-en="Fundamentals" data-zh="基本面">Fundamentals</span>
+        <span class="dc-wt"><span class="bi" data-en="Weight 20%" data-zh="权重 20%">Weight 20%</span></span>
+      </div>
+      <div class="dc-desc"><span class="bi" data-en="Core financials: P/E ratio, profit margins, revenue growth, leverage" data-zh="核心财务指标：市盈率、利润率、营收增速、负债水平的综合评估">Core financials: P/E ratio, profit margins, revenue growth, leverage</span></div>
+    </div>
+    <div class="dc-race"><div class="rb-row col-googl"><span class="rb-tk rb-tk-best">GOOGL</span><div class="rb-track"><div class="rb-fill rb-best" style="width:63.7%;background:oklch(73% 0.18 142)"><span class="rb-crown"><span class="bi" data-en="BEST" data-zh="最佳">BEST</span></span></div></div><span class="rb-sc" style="color:#86EFAC">+0.28</span></div><div class="rb-row col-nvda"><span class="rb-tk">NVDA</span><div class="rb-track"><div class="rb-fill" style="width:62.5%;background:oklch(73% 0.16 200)"></div></div><span class="rb-sc" style="color:#86EFAC">+0.25</span></div><div class="rb-row col-aapl"><span class="rb-tk">AAPL</span><div class="rb-track"><div class="rb-fill" style="width:56.7%;background:oklch(72% 0.14 280)"></div></div><span class="rb-sc" style="color:#878790">+0.13</span></div></div>
+    <div class="dc-chv"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  </div>
+  <div class="dc-body">
+    <div class="dc-body-inner">
+      <div class="dc-insight">
+        <div class="dc-insight-tag"><span class="bi" data-en="Head-to-Head Insight" data-zh="对比洞察">Head-to-Head Insight</span></div>
+        <p><span class="bi" data-en="GOOGL edges NVDA — lower P/E (29.3) and low leverage (D/E 0.16) outweigh NVDA&#x27;s industry-leading 65% margin. AAPL is the laggard: 15.7% revenue growth vs NVDA&#x27;s 73%." data-zh="GOOGL 小幅胜出 NVDA——较低市盈率 (29.3) + 低杠杆 (0.16) 压过 NVDA 65% 利润率。AAPL 垫底：营收仅 15.7%。">GOOGL edges NVDA — lower P/E (29.3) and low leverage (D/E 0.16) outweigh NVDA&#x27;s industry-leading 65% margin. AAPL is the laggard: 15.7% revenue growth vs NVDA&#x27;s 73%.</span></p>
+      </div>
+      <div class="bk-grid"><div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">GOOGL</span><span class="bk-sc" style="color:#86EFAC">+0.28</span></div>
+          <div class="bk-calc"><span class="bi" data-en="P/E 29.3 · margin 31.6% · rev +18.0% → +0.28" data-zh="PE 29.3 · 利润率 31.6% · 营收 +18.0% → +0.28">P/E 29.3 · margin 31.6% · rev +18.0% → +0.28</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="P/E" data-zh="市盈率">P/E</span></span><span class="dv">29.3</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Op. Margin" data-zh="利润率">Op. Margin</span></span><span class="dv">31.6%</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Rev. YoY" data-zh="营收同比">Rev. YoY</span></span><span class="dv">+18.0%</span></div><div class="drow"><span class="dk"><span class="bi" data-en="D/E" data-zh="资产负债率">D/E</span></span><span class="dv">0.16</span></div>
+        </div>
+<div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">NVDA</span><span class="bk-sc" style="color:#86EFAC">+0.25</span></div>
+          <div class="bk-calc"><span class="bi" data-en="P/E 37.1 · margin 65.0% · rev +73.2% → +0.25" data-zh="PE 37.1 · 利润率 65.0% · 营收 +73.2% → +0.25">P/E 37.1 · margin 65.0% · rev +73.2% → +0.25</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="P/E" data-zh="市盈率">P/E</span></span><span class="dv">37.1</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Op. Margin" data-zh="利润率">Op. Margin</span></span><span class="dv">65.0%</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Rev. YoY" data-zh="营收同比">Rev. YoY</span></span><span class="dv">+73.2%</span></div><div class="drow"><span class="dk"><span class="bi" data-en="D/E" data-zh="资产负债率">D/E</span></span><span class="dv">0.07</span></div>
+        </div>
+<div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">AAPL</span><span class="bk-sc" style="color:#878790">+0.13</span></div>
+          <div class="bk-calc"><span class="bi" data-en="P/E 33.0 · margin 35.4% · rev +15.7% → +0.13" data-zh="PE 33.0 · 利润率 35.4% · 营收 +15.7% → +0.13">P/E 33.0 · margin 35.4% · rev +15.7% → +0.13</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="P/E" data-zh="市盈率">P/E</span></span><span class="dv">33.0</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Op. Margin" data-zh="利润率">Op. Margin</span></span><span class="dv">35.4%</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Rev. YoY" data-zh="营收同比">Rev. YoY</span></span><span class="dv">+15.7%</span></div><div class="drow"><span class="dk"><span class="bi" data-en="D/E" data-zh="资产负债率">D/E</span></span><span class="dv">1.03</span></div>
+        </div></div>
+    </div>
+  </div>
+</div>
+<div class="dc reveal" data-open="false">
+  <div class="dc-head" onclick="toggleDc(this)">
+    <div class="dc-left">
+      <div class="dc-title">
+        <span class="bi" data-en="Analyst Sentiment" data-zh="分析师情绪">Analyst Sentiment</span>
+        <span class="dc-wt"><span class="bi" data-en="Weight 20%" data-zh="权重 20%">Weight 20%</span></span>
+      </div>
+      <div class="dc-desc"><span class="bi" data-en="Wall Street analyst consensus rating and upside to price target" data-zh="华尔街分析师的评级共识和目标价上行空间——越一致看好分数越高">Wall Street analyst consensus rating and upside to price target</span></div>
+    </div>
+    <div class="dc-race"><div class="rb-row col-googl"><span class="rb-tk rb-tk-best">GOOGL</span><div class="rb-track"><div class="rb-fill rb-best" style="width:100.0%;background:oklch(73% 0.18 142)"><span class="rb-crown"><span class="bi" data-en="BEST" data-zh="最佳">BEST</span></span></div></div><span class="rb-sc" style="color:#36DD0C">+1.00</span></div><div class="rb-row col-nvda"><span class="rb-tk rb-tk-best">NVDA</span><div class="rb-track"><div class="rb-fill rb-best" style="width:100.0%;background:oklch(73% 0.16 200)"><span class="rb-crown"><span class="bi" data-en="BEST" data-zh="最佳">BEST</span></span></div></div><span class="rb-sc" style="color:#36DD0C">+1.00</span></div><div class="rb-row col-aapl"><span class="rb-tk">AAPL</span><div class="rb-track"><div class="rb-fill" style="width:92.5%;background:oklch(72% 0.14 280)"></div></div><span class="rb-sc" style="color:#36DD0C">+0.85</span></div></div>
+    <div class="dc-chv"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  </div>
+  <div class="dc-body">
+    <div class="dc-body-inner">
+      <div class="dc-insight">
+        <div class="dc-insight-tag"><span class="bi" data-en="Head-to-Head Insight" data-zh="对比洞察">Head-to-Head Insight</span></div>
+        <p><span class="bi" data-en="NVDA and GOOGL max out at +1.00 — Strong Buy from 56 analysts each. NVDA&#x27;s 45.8% implied upside is nearly 2.5× GOOGL&#x27;s 18.6%." data-zh="NVDA 和 GOOGL 均满分 +1.00。差异在上行空间：NVDA 45.8% 是 GOOGL 18.6% 的 2.5 倍。">NVDA and GOOGL max out at +1.00 — Strong Buy from 56 analysts each. NVDA&#x27;s 45.8% implied upside is nearly 2.5× GOOGL&#x27;s 18.6%.</span></p>
+      </div>
+      <div class="bk-grid"><div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">GOOGL</span><span class="bk-sc" style="color:#36DD0C">+1.00</span></div>
+          <div class="bk-calc"><span class="bi" data-en="&#x27;Strong Buy&#x27; · upside +18.6% · 56 analysts → +1.00" data-zh="&#x27;Strong Buy&#x27; · 上行 +18.6% · 56位 → +1.00">&#x27;Strong Buy&#x27; · upside +18.6% · 56 analysts → +1.00</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="Rating" data-zh="评级">Rating</span></span><span class="dv">Strong Buy</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Target" data-zh="目标价">Target</span></span><span class="dv">$376.29</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Upside" data-zh="上行">Upside</span></span><span class="dv">+18.6%</span></div>
+        </div>
+<div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">NVDA</span><span class="bk-sc" style="color:#36DD0C">+1.00</span></div>
+          <div class="bk-calc"><span class="bi" data-en="&#x27;Strong Buy&#x27; · upside +45.8% · 56 analysts → +1.00" data-zh="&#x27;Strong Buy&#x27; · 上行 +45.8% · 56位 → +1.00">&#x27;Strong Buy&#x27; · upside +45.8% · 56 analysts → +1.00</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="Rating" data-zh="评级">Rating</span></span><span class="dv">Strong Buy</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Target" data-zh="目标价">Target</span></span><span class="dv">$268.22</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Upside" data-zh="上行">Upside</span></span><span class="dv">+45.8%</span></div>
+        </div>
+<div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">AAPL</span><span class="bk-sc" style="color:#36DD0C">+0.85</span></div>
+          <div class="bk-calc"><span class="bi" data-en="&#x27;Buy&#x27; · upside +13.7% · 40 analysts → +0.85" data-zh="&#x27;Buy&#x27; · 上行 +13.7% · 40位 → +0.85">&#x27;Buy&#x27; · upside +13.7% · 40 analysts → +0.85</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="Rating" data-zh="评级">Rating</span></span><span class="dv">Buy</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Target" data-zh="目标价">Target</span></span><span class="dv">$296.12</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Upside" data-zh="上行">Upside</span></span><span class="dv">+13.7%</span></div>
+        </div></div>
+    </div>
+  </div>
+</div>
+<div class="dc reveal" data-open="false">
+  <div class="dc-head" onclick="toggleDc(this)">
+    <div class="dc-left">
+      <div class="dc-title">
+        <span class="bi" data-en="Sector Performance" data-zh="板块表现">Sector Performance</span>
+        <span class="dc-wt"><span class="bi" data-en="Weight 15%" data-zh="权重 15%">Weight 15%</span></span>
+      </div>
+      <div class="dc-desc"><span class="bi" data-en="Stock performance vs its sector — outperforming signals relative strength" data-zh="个股涨幅 vs 所在板块——跑赢板块说明个股相对更强">Stock performance vs its sector — outperforming signals relative strength</span></div>
+    </div>
+    <div class="dc-race"><div class="rb-row col-googl"><span class="rb-tk">GOOGL</span><div class="rb-track"><div class="rb-fill" style="width:35.0%;background:oklch(73% 0.18 142)"></div></div><span class="rb-sc" style="color:#FBBF24">-0.30</span></div><div class="rb-row col-nvda"><span class="rb-tk rb-tk-best">NVDA</span><div class="rb-track"><div class="rb-fill rb-best" style="width:45.0%;background:oklch(73% 0.16 200)"><span class="rb-crown"><span class="bi" data-en="BEST" data-zh="最佳">BEST</span></span></div></div><span class="rb-sc" style="color:#878790">-0.10</span></div><div class="rb-row col-aapl"><span class="rb-tk rb-tk-best">AAPL</span><div class="rb-track"><div class="rb-fill rb-best" style="width:45.0%;background:oklch(72% 0.14 280)"><span class="rb-crown"><span class="bi" data-en="BEST" data-zh="最佳">BEST</span></span></div></div><span class="rb-sc" style="color:#878790">-0.10</span></div></div>
+    <div class="dc-chv"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  </div>
+  <div class="dc-body">
+    <div class="dc-body-inner">
+      <div class="dc-insight">
+        <div class="dc-insight-tag"><span class="bi" data-en="Head-to-Head Insight" data-zh="对比洞察">Head-to-Head Insight</span></div>
+        <p><span class="bi" data-en="Everyone loses here — all three score negative. GOOGL gets the biggest penalty despite beating its sector." data-zh="集体失分——三只都是负分。GOOGL 虽跑赢自己板块但扣分最多。">Everyone loses here — all three score negative. GOOGL gets the biggest penalty despite beating its sector.</span></p>
+      </div>
+      <div class="bk-grid"><div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">GOOGL</span><span class="bk-sc" style="color:#FBBF24">-0.30</span></div>
+          <div class="bk-calc"><span class="bi" data-en="Stock +3.6% vs sector -2.9% → -0.30" data-zh="个股 +3.6% vs 板块 -2.9% → -0.30">Stock +3.6% vs sector -2.9% → -0.30</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="Stock 1m" data-zh="个股">Stock 1m</span></span><span class="dv">+3.6%</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Sector 1m" data-zh="板块">Sector 1m</span></span><span class="dv">-2.9%</span></div><div class="drow"><span class="dk"><span class="bi" data-en="RS" data-zh="相对强度">RS</span></span><span class="dv">+-124.2pp</span></div>
+        </div>
+<div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">NVDA</span><span class="bk-sc" style="color:#878790">-0.10</span></div>
+          <div class="bk-calc"><span class="bi" data-en="Stock +-0.5% vs sector 1.8% → -0.10" data-zh="个股 +-0.5% vs 板块 1.8% → -0.10">Stock +-0.5% vs sector 1.8% → -0.10</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="Stock 1m" data-zh="个股">Stock 1m</span></span><span class="dv">+-0.5%</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Sector 1m" data-zh="板块">Sector 1m</span></span><span class="dv">1.8%</span></div><div class="drow"><span class="dk"><span class="bi" data-en="RS" data-zh="相对强度">RS</span></span><span class="dv">+-25.9pp</span></div>
+        </div>
+<div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">AAPL</span><span class="bk-sc" style="color:#878790">-0.10</span></div>
+          <div class="bk-calc"><span class="bi" data-en="Stock +-0.1% vs sector 1.8% → -0.10" data-zh="个股 +-0.1% vs 板块 1.8% → -0.10">Stock +-0.1% vs sector 1.8% → -0.10</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="Stock 1m" data-zh="个股">Stock 1m</span></span><span class="dv">+-0.1%</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Sector 1m" data-zh="板块">Sector 1m</span></span><span class="dv">1.8%</span></div><div class="drow"><span class="dk"><span class="bi" data-en="RS" data-zh="相对强度">RS</span></span><span class="dv">+-7.3pp</span></div>
+        </div></div>
+    </div>
+  </div>
+</div>
+<div class="dc reveal" data-open="false">
+  <div class="dc-head" onclick="toggleDc(this)">
+    <div class="dc-left">
+      <div class="dc-title">
+        <span class="bi" data-en="Momentum" data-zh="动量">Momentum</span>
+        <span class="dc-wt"><span class="bi" data-en="Weight 15%" data-zh="权重 15%">Weight 15%</span></span>
+      </div>
+      <div class="dc-desc"><span class="bi" data-en="Trend strength via RSI indicator and trading volume changes" data-zh="通过 RSI 强弱指标和成交量变化来判断当前价格趋势的力度">Trend strength via RSI indicator and trading volume changes</span></div>
+    </div>
+    <div class="dc-race"><div class="rb-row col-googl"><span class="rb-tk">GOOGL</span><div class="rb-track"><div class="rb-fill" style="width:50.0%;background:oklch(73% 0.18 142)"></div></div><span class="rb-sc" style="color:#878790">+0.00</span></div><div class="rb-row col-nvda"><span class="rb-tk">NVDA</span><div class="rb-track"><div class="rb-fill" style="width:50.0%;background:oklch(73% 0.16 200)"></div></div><span class="rb-sc" style="color:#878790">+0.00</span></div><div class="rb-row col-aapl"><span class="rb-tk">AAPL</span><div class="rb-track"><div class="rb-fill" style="width:50.0%;background:oklch(72% 0.14 280)"></div></div><span class="rb-sc" style="color:#878790">+0.00</span></div></div>
+    <div class="dc-chv"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  </div>
+  <div class="dc-body">
+    <div class="dc-body-inner">
+      <div class="dc-insight">
+        <div class="dc-insight-tag"><span class="bi" data-en="Head-to-Head Insight" data-zh="对比洞察">Head-to-Head Insight</span></div>
+        <p><span class="bi" data-en="All three parked in neutral — RSI 55-66, none near 52-week extremes, volume below average." data-zh="三者动量都在中性区——RSI 55-66，均未接近 52 周极值，成交量低于均值。">All three parked in neutral — RSI 55-66, none near 52-week extremes, volume below average.</span></p>
+      </div>
+      <div class="bk-grid"><div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">GOOGL</span><span class="bk-sc" style="color:#878790">+0.00</span></div>
+          <div class="bk-calc"><span class="bi" data-en="RSI 55.7 · vol 0.78× → +0.00" data-zh="RSI 55.7 · 量 0.78× → +0.00">RSI 55.7 · vol 0.78× → +0.00</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="RSI" data-zh="RSI">RSI</span></span><span class="dv">55.7</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Vol Ratio" data-zh="成交量比">Vol Ratio</span></span><span class="dv">0.78×</span></div>
+        </div>
+<div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">NVDA</span><span class="bk-sc" style="color:#878790">+0.00</span></div>
+          <div class="bk-calc"><span class="bi" data-en="RSI 55.9 · vol 0.72× → +0.00" data-zh="RSI 55.9 · 量 0.72× → +0.00">RSI 55.9 · vol 0.72× → +0.00</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="RSI" data-zh="RSI">RSI</span></span><span class="dv">55.9</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Vol Ratio" data-zh="成交量比">Vol Ratio</span></span><span class="dv">0.72×</span></div>
+        </div>
+<div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">AAPL</span><span class="bk-sc" style="color:#878790">+0.00</span></div>
+          <div class="bk-calc"><span class="bi" data-en="RSI 65.7 · vol 0.81× → +0.00" data-zh="RSI 65.7 · 量 0.81× → +0.00">RSI 65.7 · vol 0.81× → +0.00</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="RSI" data-zh="RSI">RSI</span></span><span class="dv">65.7</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Vol Ratio" data-zh="成交量比">Vol Ratio</span></span><span class="dv">0.81×</span></div>
+        </div></div>
+    </div>
+  </div>
+</div>
+<div class="dc reveal" data-open="false">
+  <div class="dc-head" onclick="toggleDc(this)">
+    <div class="dc-left">
+      <div class="dc-title">
+        <span class="bi" data-en="Historical Patterns" data-zh="历史表现">Historical Patterns</span>
+        <span class="dc-wt"><span class="bi" data-en="Weight 10%" data-zh="权重 10%">Weight 10%</span></span>
+      </div>
+      <div class="dc-desc"><span class="bi" data-en="Earnings track record — how consistently the company beats estimates" data-zh="历史财报表现——公司多久超预期一次，越稳定可预测性越强">Earnings track record — how consistently the company beats estimates</span></div>
+    </div>
+    <div class="dc-race"><div class="rb-row col-googl"><span class="rb-tk">GOOGL</span><div class="rb-track"><div class="rb-fill" style="width:75.0%;background:oklch(73% 0.18 142)"></div></div><span class="rb-sc" style="color:#4ADE80">+0.50</span></div><div class="rb-row col-nvda"><span class="rb-tk">NVDA</span><div class="rb-track"><div class="rb-fill" style="width:75.0%;background:oklch(73% 0.16 200)"></div></div><span class="rb-sc" style="color:#4ADE80">+0.50</span></div><div class="rb-row col-aapl"><span class="rb-tk">AAPL</span><div class="rb-track"><div class="rb-fill" style="width:75.0%;background:oklch(72% 0.14 280)"></div></div><span class="rb-sc" style="color:#4ADE80">+0.50</span></div></div>
+    <div class="dc-chv"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  </div>
+  <div class="dc-body">
+    <div class="dc-body-inner">
+      <div class="dc-insight">
+        <div class="dc-insight-tag"><span class="bi" data-en="Head-to-Head Insight" data-zh="对比洞察">Head-to-Head Insight</span></div>
+        <p><span class="bi" data-en="Identical surface records — all beat 3/4 quarters. Divergence is post-earnings drift: NVDA +0.43%, GOOGL -0.34%, AAPL -0.18%." data-zh="表面记录完全相同——过去 4 季度均 3 次超预期。差异在财报后漂移：NVDA +0.43%，GOOGL -0.34%。">Identical surface records — all beat 3/4 quarters. Divergence is post-earnings drift: NVDA +0.43%, GOOGL -0.34%, AAPL -0.18%.</span></p>
+      </div>
+      <div class="bk-grid"><div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">GOOGL</span><span class="bk-sc" style="color:#4ADE80">+0.50</span></div>
+          <div class="bk-calc"><span class="bi" data-en="Beats 3/4 · avg react -0.34% → +0.50" data-zh="超预期 3/4 · 反应 -0.34% → +0.50">Beats 3/4 · avg react -0.34% → +0.50</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="Beats" data-zh="超预期">Beats</span></span><span class="dv">3/4</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Avg React" data-zh="平均反应">Avg React</span></span><span class="dv">-0.34%</span></div>
+        </div>
+<div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">NVDA</span><span class="bk-sc" style="color:#4ADE80">+0.50</span></div>
+          <div class="bk-calc"><span class="bi" data-en="Beats 3/4 · avg react 0.43% → +0.50" data-zh="超预期 3/4 · 反应 0.43% → +0.50">Beats 3/4 · avg react 0.43% → +0.50</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="Beats" data-zh="超预期">Beats</span></span><span class="dv">3/4</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Avg React" data-zh="平均反应">Avg React</span></span><span class="dv">0.43%</span></div>
+        </div>
+<div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">AAPL</span><span class="bk-sc" style="color:#4ADE80">+0.50</span></div>
+          <div class="bk-calc"><span class="bi" data-en="Beats 3/4 · avg react -0.18% → +0.50" data-zh="超预期 3/4 · 反应 -0.18% → +0.50">Beats 3/4 · avg react -0.18% → +0.50</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="Beats" data-zh="超预期">Beats</span></span><span class="dv">3/4</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Avg React" data-zh="平均反应">Avg React</span></span><span class="dv">-0.18%</span></div>
+        </div></div>
+    </div>
+  </div>
+</div>
+<div class="dc reveal" data-open="false">
+  <div class="dc-head" onclick="toggleDc(this)">
+    <div class="dc-left">
+      <div class="dc-title">
+        <span class="bi" data-en="Market Context" data-zh="市场环境">Market Context</span>
+        <span class="dc-wt"><span class="bi" data-en="Weight 10%" data-zh="权重 10%">Weight 10%</span></span>
+      </div>
+      <div class="dc-desc"><span class="bi" data-en="Overall market health: VIX fear level, S&amp;P 500 trend, risk appetite" data-zh="大盘健康度：VIX 恐慌指数、标普 500 趋势、市场风险偏好">Overall market health: VIX fear level, S&amp;P 500 trend, risk appetite</span></div>
+    </div>
+    <div class="dc-race"><div class="rb-row col-googl"><span class="rb-tk">GOOGL</span><div class="rb-track"><div class="rb-fill" style="width:57.5%;background:oklch(73% 0.18 142)"></div></div><span class="rb-sc" style="color:#86EFAC">+0.15</span></div><div class="rb-row col-nvda"><span class="rb-tk rb-tk-best">NVDA</span><div class="rb-track"><div class="rb-fill rb-best" style="width:62.5%;background:oklch(73% 0.16 200)"><span class="rb-crown"><span class="bi" data-en="BEST" data-zh="最佳">BEST</span></span></div></div><span class="rb-sc" style="color:#86EFAC">+0.25</span></div><div class="rb-row col-aapl"><span class="rb-tk rb-tk-best">AAPL</span><div class="rb-track"><div class="rb-fill rb-best" style="width:62.5%;background:oklch(72% 0.14 280)"><span class="rb-crown"><span class="bi" data-en="BEST" data-zh="最佳">BEST</span></span></div></div><span class="rb-sc" style="color:#86EFAC">+0.25</span></div></div>
+    <div class="dc-chv"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  </div>
+  <div class="dc-body">
+    <div class="dc-body-inner">
+      <div class="dc-insight">
+        <div class="dc-insight-tag"><span class="bi" data-en="Head-to-Head Insight" data-zh="对比洞察">Head-to-Head Insight</span></div>
+        <p><span class="bi" data-en="NVDA/AAPL both get +0.25 from calm-VIX bull backdrop. GOOGL got only +0.15 because of a brief VIX spike to 21.5." data-zh="NVDA 和 AAPL 在平稳 VIX 牛市下各得 +0.25。GOOGL 仅得 +0.15 因 VIX 短暂冲高至 21.5。">NVDA/AAPL both get +0.25 from calm-VIX bull backdrop. GOOGL got only +0.15 because of a brief VIX spike to 21.5.</span></p>
+      </div>
+      <div class="bk-grid"><div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">GOOGL</span><span class="bk-sc" style="color:#86EFAC">+0.15</span></div>
+          <div class="bk-calc"><span class="bi" data-en="bull · VIX 21.5 · SPY +2.9% → +0.15" data-zh="bull · VIX 21.5 · SPY +2.9% → +0.15">bull · VIX 21.5 · SPY +2.9% → +0.15</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="Regime" data-zh="状态">Regime</span></span><span class="dv">bull</span></div><div class="drow"><span class="dk"><span class="bi" data-en="VIX" data-zh="VIX">VIX</span></span><span class="dv">21.5</span></div><div class="drow"><span class="dk"><span class="bi" data-en="SPY 10d" data-zh="SPY">SPY 10d</span></span><span class="dv">+2.9%</span></div>
+        </div>
+<div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">NVDA</span><span class="bk-sc" style="color:#86EFAC">+0.25</span></div>
+          <div class="bk-calc"><span class="bi" data-en="bull · VIX 19.5 · SPY +5.4% → +0.25" data-zh="bull · VIX 19.5 · SPY +5.4% → +0.25">bull · VIX 19.5 · SPY +5.4% → +0.25</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="Regime" data-zh="状态">Regime</span></span><span class="dv">bull</span></div><div class="drow"><span class="dk"><span class="bi" data-en="VIX" data-zh="VIX">VIX</span></span><span class="dv">19.5</span></div><div class="drow"><span class="dk"><span class="bi" data-en="SPY 10d" data-zh="SPY">SPY 10d</span></span><span class="dv">+5.4%</span></div>
+        </div>
+<div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">AAPL</span><span class="bk-sc" style="color:#86EFAC">+0.25</span></div>
+          <div class="bk-calc"><span class="bi" data-en="bull · VIX 19.5 · SPY +5.4% → +0.25" data-zh="bull · VIX 19.5 · SPY +5.4% → +0.25">bull · VIX 19.5 · SPY +5.4% → +0.25</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="Regime" data-zh="状态">Regime</span></span><span class="dv">bull</span></div><div class="drow"><span class="dk"><span class="bi" data-en="VIX" data-zh="VIX">VIX</span></span><span class="dv">19.5</span></div><div class="drow"><span class="dk"><span class="bi" data-en="SPY 10d" data-zh="SPY">SPY 10d</span></span><span class="dv">+5.4%</span></div>
+        </div></div>
+    </div>
+  </div>
+</div>
+<div class="dc reveal" data-open="false">
+  <div class="dc-head" onclick="toggleDc(this)">
+    <div class="dc-left">
+      <div class="dc-title">
+        <span class="bi" data-en="Market Sentiment" data-zh="市场情绪">Market Sentiment</span>
+        <span class="dc-wt"><span class="bi" data-en="Weight 10%" data-zh="权重 10%">Weight 10%</span></span>
+      </div>
+      <div class="dc-desc"><span class="bi" data-en="Crowd mood: Fear &amp; Greed index, short selling activity" data-zh="市场人群情绪：恐贪指数、空头持仓——衡量市场的乐观/悲观温度">Crowd mood: Fear &amp; Greed index, short selling activity</span></div>
+    </div>
+    <div class="dc-race"><div class="rb-row col-googl"><span class="rb-tk">GOOGL</span><div class="rb-track"><div class="rb-fill" style="width:56.7%;background:oklch(73% 0.18 142)"></div></div><span class="rb-sc" style="color:#878790">+0.13</span></div><div class="rb-row col-nvda"><span class="rb-tk rb-tk-best">NVDA</span><div class="rb-track"><div class="rb-fill rb-best" style="width:58.3%;background:oklch(73% 0.16 200)"><span class="rb-crown"><span class="bi" data-en="BEST" data-zh="最佳">BEST</span></span></div></div><span class="rb-sc" style="color:#86EFAC">+0.17</span></div><div class="rb-row col-aapl"><span class="rb-tk rb-tk-best">AAPL</span><div class="rb-track"><div class="rb-fill rb-best" style="width:58.3%;background:oklch(72% 0.14 280)"><span class="rb-crown"><span class="bi" data-en="BEST" data-zh="最佳">BEST</span></span></div></div><span class="rb-sc" style="color:#86EFAC">+0.17</span></div></div>
+    <div class="dc-chv"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  </div>
+  <div class="dc-body">
+    <div class="dc-body-inner">
+      <div class="dc-insight">
+        <div class="dc-insight-tag"><span class="bi" data-en="Head-to-Head Insight" data-zh="对比洞察">Head-to-Head Insight</span></div>
+        <p><span class="bi" data-en="NVDA/AAPL narrowly edge GOOGL — same Fear &amp; Greed backdrop, steeper VIX contango. Only 3/5 indicators available." data-zh="NVDA/AAPL 微幅领先 GOOGL——同样恐惧贪婪背景，但 VIX contango 更明显。仅 3/5 指标可用。">NVDA/AAPL narrowly edge GOOGL — same Fear &amp; Greed backdrop, steeper VIX contango. Only 3/5 indicators available.</span></p>
+      </div>
+      <div class="bk-grid"><div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">GOOGL</span><span class="bk-sc" style="color:#878790">+0.13</span></div>
+          <div class="bk-calc"><span class="bi" data-en="F&amp;G 32 · SI 1.37% · 3/5 → +0.13" data-zh="恐贪 32 · 空头 1.37% · 3/5 → +0.13">F&amp;G 32 · SI 1.37% · 3/5 → +0.13</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="F&amp;G" data-zh="恐贪">F&amp;G</span></span><span class="dv">32</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Short Int" data-zh="空头">Short Int</span></span><span class="dv">1.37%</span></div>
+        </div>
+<div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">NVDA</span><span class="bk-sc" style="color:#86EFAC">+0.17</span></div>
+          <div class="bk-calc"><span class="bi" data-en="F&amp;G 36 · SI 0.98% · 3/5 → +0.17" data-zh="恐贪 36 · 空头 0.98% · 3/5 → +0.17">F&amp;G 36 · SI 0.98% · 3/5 → +0.17</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="F&amp;G" data-zh="恐贪">F&amp;G</span></span><span class="dv">36</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Short Int" data-zh="空头">Short Int</span></span><span class="dv">0.98%</span></div>
+        </div>
+<div class="bk-col">
+          <div class="bk-head"><span class="bk-tk">AAPL</span><span class="bk-sc" style="color:#86EFAC">+0.17</span></div>
+          <div class="bk-calc"><span class="bi" data-en="F&amp;G 36 · SI 0.85% · 3/5 → +0.17" data-zh="恐贪 36 · 空头 0.85% · 3/5 → +0.17">F&amp;G 36 · SI 0.85% · 3/5 → +0.17</span></div>
+          <div class="drow"><span class="dk"><span class="bi" data-en="F&amp;G" data-zh="恐贪">F&amp;G</span></span><span class="dv">36</span></div><div class="drow"><span class="dk"><span class="bi" data-en="Short Int" data-zh="空头">Short Int</span></span><span class="dv">0.85%</span></div>
+        </div></div>
+    </div>
+  </div>
+</div></div>
+      <div class="sec-title reveal"><span class="bi" data-en="Quick Takes" data-zh="快速评析">Quick Takes</span></div>
+      <div class="qt-row"><div class="qt reveal"><div class="qt-hl"><span class="bi" data-en="Sturdy BUY driven by Street consensus — sector drag keeps it from STRONG BUY" data-zh="稳健 BUY，华尔街一致预期推动；板块拖累未能升至 STRONG BUY">Sturdy BUY driven by Street consensus — sector drag keeps it from STRONG BUY</span></div><div class="qt-li"><span class="bi" data-en="Strong Buy consensus · 18.6% upside · 56 analysts" data-zh="分析师 Strong Buy · 上行 18.6% · 56 位">Strong Buy consensus · 18.6% upside · 56 analysts</span></div><div class="qt-li"><span class="bi" data-en="6.8% earnings beat with strong 31.6% operating margin" data-zh="财报超预期 6.8%，利润率 31.6%">6.8% earnings beat with strong 31.6% operating margin</span></div><div class="qt-li"><span class="bi" data-en="Headwind: Comm Services sector -2.9% 1m" data-zh="逆风：通信服务板块 -2.9%">Headwind: Comm Services sector -2.9% 1m</span></div></div>
+<div class="qt reveal"><div class="qt-hl"><span class="bi" data-en="Highest-scoring — analyst euphoria + hyper growth, but recent 1m pullback" data-zh="三者中最高分 — 分析师极度乐观 + 超高增长，但近 1 月有回调">Highest-scoring — analyst euphoria + hyper growth, but recent 1m pullback</span></div><div class="qt-li"><span class="bi" data-en="45.8% implied upside (highest of three)" data-zh="45.8% 上行空间（三者最高）">45.8% implied upside (highest of three)</span></div><div class="qt-li"><span class="bi" data-en="65% operating margin + 73.2% YoY revenue growth" data-zh="利润率 65% + 营收同比 73.2%">65% operating margin + 73.2% YoY revenue growth</span></div><div class="qt-li"><span class="bi" data-en="Stock -0.5% 1m while Tech sector +1.8%" data-zh="股价 1 月 -0.5%，科技板块 +1.8%">Stock -0.5% 1m while Tech sector +1.8%</span></div></div>
+<div class="qt reveal"><div class="qt-hl"><span class="bi" data-en="Lowest-confidence BUY — solid fundamentals but growth and upside modest" data-zh="三者中置信度最低的 BUY — 基本面稳健但增长与上行空间温和">Lowest-confidence BUY — solid fundamentals but growth and upside modest</span></div><div class="qt-li"><span class="bi" data-en="Clean 6.4% earnings beat, best surprise of three" data-zh="6.4% 超预期，幅度三者最大">Clean 6.4% earnings beat, best surprise of three</span></div><div class="qt-li"><span class="bi" data-en="Only 13.7% analyst upside (&lt; 1/3 of NVDA)" data-zh="仅 13.7% 上行空间（不足 NVDA 的 1/3）">Only 13.7% analyst upside (&lt; 1/3 of NVDA)</span></div><div class="qt-li"><span class="bi" data-en="Revenue growth 15.7% vs NVDA 73% — maturing cycle" data-zh="营收 +15.7% vs NVDA 73%，周期趋成熟">Revenue growth 15.7% vs NVDA 73% — maturing cycle</span></div></div></div>
+    </div>
+
+    <!-- ═══ Tab: GOOGL Deep Dive ═══ -->
+    <div id="tab-dd" class="panel">
+      <div class="hero reveal">
+        <div class="hero-row">
+          <div class="hero-verdict">
+            <div class="hero-tier" style="color:#4ADE80"><span class="bi" data-en="BUY" data-zh="买入">BUY</span></div>
+            <div class="hero-score" style="color:#4ADE80">+0.383</div>
+            <div class="hero-price">$317.32</div>
+          </div>
+          <div class="hero-meta">
+            <div class="hero-m"><div class="hero-mk"><span class="bi" data-en="Confidence" data-zh="置信度">Confidence</span></div>
+              <div class="hero-mv">38.3%</div></div>
+            <div class="hero-m" style="position:relative">
+              <div class="hero-mk"><span class="bi" data-en="Target Price" data-zh="目标价">Target Price</span> <span class="vc-info" style="display:inline-flex;vertical-align:middle;margin-left:4px">?<div class="vc-tooltip">
+                <div class="tt-title"><span class="bi" data-en="How is target price calculated?" data-zh="目标价如何计算？">How is target price calculated?</span></div>
+                <div class="tt-list">
+                  <div class="tt-item"><div class="tt-dot"></div><span class="tt-k"><span class="bi" data-en="Source" data-zh="数据源">Source</span></span><span class="tt-v">Yahoo Finance targetMeanPrice</span></div>
+                  <div class="tt-item"><div class="tt-dot"></div><span class="tt-k"><span class="bi" data-en="Method" data-zh="方法">Method</span></span><span class="tt-v"><span class="bi-rich" data-rich-en="<strong>56 analysts</strong> mean target" data-rich-zh="<strong>56 位分析师</strong>目标价均值"><strong>56 analysts</strong> mean target</span></span></div>
+                  <div class="tt-item"><div class="tt-dot"></div><span class="tt-k"><span class="bi" data-en="Formula" data-zh="公式">Formula</span></span><span class="tt-v"><span class="bi" data-en="(target − current) ÷ current × 100%" data-zh="(目标价 − 当前价) ÷ 当前价 × 100%">(target − current) ÷ current × 100%</span></span></div>
+                  <div class="tt-item"><div class="tt-dot"></div><span class="tt-k"><span class="bi" data-en="Rating" data-zh="评级">Rating</span></span><span class="tt-v"><strong>Strong Buy</strong></span></div>
+                </div>
+              </div></span></div>
+              <div class="hero-mv">$376.29</div></div>
+            <div class="hero-m"><div class="hero-mk"><span class="bi" data-en="As of" data-zh="截至">As of</span></div>
+              <div class="hero-mv" style="font-size:var(--fs-sm)">2026-04-09</div></div>
+          </div>
+        </div>
+        <div class="hero-bar">
+          <div class="hero-bar-zero"></div>
+          <div class="hero-bar-fill" style="left:50.0%;width:19.2%;background:#4ADE80"></div>
+        </div>
+      </div>
+
+      <!-- K-line for GOOGL deep dive -->
+      <div class="kline-wrap reveal">
+        <div class="kline-inner">
+          <div class="kline-header">
+            <span class="kline-title"><span class="bi" data-en="GOOGL Price Chart" data-zh="GOOGL K 线图">GOOGL Price Chart</span></span>
+          </div>
+          <canvas id="klineCanvasDD" class="kline-canvas"></canvas>
+        </div>
+      </div>
+
+      <div class="args reveal">
+        <div class="arg-col"><h3><span class="bi" data-en="Supporting Points" data-zh="支撑点">Supporting Points</span></h3><div class="arg-item"><span class="bi" data-en="Beat by 6.8% - EPS $2.82 vs $2.64 expected" data-zh="财报超预期 6.8% — 实际 EPS $2.82 vs 预期 $2.64">Beat by 6.8% - EPS $2.82 vs $2.64 expected</span></div><div class="arg-item"><span class="bi" data-en="Strong margin: 31.6%" data-zh="营业利润率强劲：31.6%">Strong margin: 31.6%</span></div><div class="arg-item"><span class="bi" data-en="Analyst consensus: Strong Buy with 18.6% upside (56 analysts)" data-zh="分析师一致评级 Strong Buy，上行 18.6%（56 位分析师）">Analyst consensus: Strong Buy with 18.6% upside (56 analysts)</span></div><div class="arg-item"><span class="bi" data-en="Historical pattern: 3/4 quarters beat expectations, avg reaction -0.3%" data-zh="历史模式：过去 4 季度 3 次超预期">Historical pattern: 3/4 quarters beat expectations, avg reaction -0.3%</span></div><div class="arg-item"><span class="bi" data-en="Market: VIX 21.5 (elevated), Market bull (SPY +2.9%, QQQ +3.1% 10d)" data-zh="市场环境：VIX 21.5（偏高），大盘牛市">Market: VIX 21.5 (elevated), Market bull (SPY +2.9%, QQQ +3.1% 10d)</span></div></div>
+        <div class="arg-col caveat"><h3><span class="bi" data-en="Caveats" data-zh="风险提示">Caveats</span></h3><div class="arg-item"><span class="bi" data-en="Short interest data typically ~2 weeks old (FINRA lag)" data-zh="空头占比数据通常滞后约 2 周（FINRA 披露延迟）">Short interest data typically ~2 weeks old (FINRA lag)</span></div><div class="arg-item"><span class="bi" data-en="Sector Communication Services is weak despite stock fundamentals" data-zh="尽管个股基本面稳健，通信服务板块仍处于弱势">Sector Communication Services is weak despite stock fundamentals</span></div><div class="arg-item"><span class="bi" data-en="⚠️ BREAKING NEWS: Stock Market Insights: War, oil and volatility: Why the stock market still looks ready to rise - TelegraphHerald.com (5h ago)" data-zh="⚠️ 突发新闻：战争、石油与波动（5h前）">⚠️ BREAKING NEWS: Stock Market Insights: War, oil and volatility: Why the stock market still looks ready to rise - TelegraphHerald.com (5h ago)</span></div><div class="arg-item"><span class="bi" data-en="⚠️ BREAKING NEWS: Tracking the Farm Economy in Crisis - Farm Aid (8h ago)" data-zh="⚠️ 突发新闻：农业经济危机（8h前）">⚠️ BREAKING NEWS: Tracking the Farm Economy in Crisis - Farm Aid (8h ago)</span></div></div>
+      </div>
+
+      <div class="sec-title reveal"><span class="bi" data-en="8-Dimension Analysis" data-zh="8 维度分析">8-Dimension Analysis</span></div>
+      <div class="dim-shell reveal"><div class="dim" data-key="earnings_surprise" data-open="0">
+  <div class="dim-head" onclick="toggleDim(this)">
+    <span class="dim-idx">01</span>
+    <div class="dim-info">
+      <div class="dim-name"><span class="bi" data-en="Earnings Surprise" data-zh="财报超预期">Earnings Surprise</span></div>
+      <div class="dim-tags">
+        <span class="dim-wt"><span class="bi" data-en="Weight" data-zh="权重">Weight</span> 30%</span>
+        <span class="dim-sc" style="background:#36DD0C;color:var(--bg)">+0.70</span>
+      </div>
+    </div>
+    <span class="dim-chv">▸</span>
+  </div>
+  <div class="dim-one"><span class="bi" data-en="Beat by 6.8% — actual EPS $2.82 vs $2.64 expected" data-zh="超预期 6.8% — 实际 EPS $2.82 vs 预期 $2.64">Beat by 6.8% — actual EPS $2.82 vs $2.64 expected</span></div>
+  <div class="dim-gauge">
+    <div class="dim-gt"><div class="dim-gz"></div>
+      <div class="dim-gf" style="left:50.0%;width:35.0%;background:#36DD0C"></div></div>
+    <div class="dim-gl"><span>−1</span><span>0</span><span>+1</span></div>
+  </div>
+  <div class="dim-detail"><div class="dim-detail-inner"><div class="dim-detail-content">
+    <div><div class="dd-label">① <span class="bi" data-en="Analysis Process" data-zh="分析过程">Analysis Process</span></div>
+      <div class="dd-text"><span class="bi" data-en="Compare the most recent quarter&#x27;s actual EPS against analyst consensus. Compute surprise% = (actual − expected)/expected. Map to score buckets: &gt; +10% → +1.0, +5–10% → +0.7, 0–5% → +0.3, 0 to −5% → −0.3, &lt; −5% → −1.0." data-zh="比较最近一个季度的实际 EPS 与分析师一致预期。计算超预期% = (实际 − 预期) / 预期。映射到得分区间：&gt; +10% → +1.0，+5–10% → +0.7，0–5% → +0.3，0 至 −5% → −0.3，&lt; −5% → −1.0。">Compare the most recent quarter&#x27;s actual EPS against analyst consensus. Compute surprise% = (actual − expected)/expected. Map to score buckets: &gt; +10% → +1.0, +5–10% → +0.7, 0–5% → +0.3, 0 to −5% → −0.3, &lt; −5% → −1.0.</span></div></div>
+    <div><div class="dd-label">② <span class="bi" data-en="Calculation" data-zh="计算步骤">Calculation</span></div>
+      <div class="dd-calc"><span class="bi" data-en="Actual EPS $2.82, consensus $2.64 → surprise +6.82% → bucket &#x27;+5–10%&#x27; → score +0.70" data-zh="实际 EPS $2.82，一致预期 $2.64 → 超预期 +6.82% → 进入 &#x27;+5–10%&#x27; 区间 → 得分 +0.70">Actual EPS $2.82, consensus $2.64 → surprise +6.82% → bucket &#x27;+5–10%&#x27; → score +0.70</span></div></div>
+    <div><div class="dd-label">③ <span class="bi" data-en="Raw Data" data-zh="原始数据">Raw Data</span></div>
+      <div class="dd-table"><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="Actual EPS" data-zh="实际 EPS">Actual EPS</span></span><span class="dd-tv">$2.82</span></div><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="Expected EPS" data-zh="预期 EPS">Expected EPS</span></span><span class="dd-tv">$2.64</span></div><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="Surprise %" data-zh="超预期 %">Surprise %</span></span><span class="dd-tv">6.82%</span></div></div></div>
+    <div><div class="dd-label">④ <span class="bi" data-en="Interpretation" data-zh="打分解读">Interpretation</span></div>
+      <div class="dd-text"><span class="bi" data-en="A 6.8% beat is solid but not a blowout. Markets already priced in most of the strength — constructive but not an explosive catalyst on its own." data-zh="6.8% 的超预期稳健但不算爆炸性数字。市场已经 price in 了大部分利好——属于建设性信号，但不足以独立成为强催化剂。">A 6.8% beat is solid but not a blowout. Markets already priced in most of the strength — constructive but not an explosive catalyst on its own.</span></div></div>
+  </div></div></div>
+</div></div>
+<div class="dim-shell reveal"><div class="dim" data-key="fundamentals" data-open="0">
+  <div class="dim-head" onclick="toggleDim(this)">
+    <span class="dim-idx">02</span>
+    <div class="dim-info">
+      <div class="dim-name"><span class="bi" data-en="Fundamentals" data-zh="基本面">Fundamentals</span></div>
+      <div class="dim-tags">
+        <span class="dim-wt"><span class="bi" data-en="Weight" data-zh="权重">Weight</span> 20%</span>
+        <span class="dim-sc" style="background:#86EFAC;color:var(--bg)">+0.28</span>
+      </div>
+    </div>
+    <span class="dim-chv">▸</span>
+  </div>
+  <div class="dim-one"><span class="bi" data-en="Operating margin 31.6%, revenue +18.0% YoY, P/E 29.3" data-zh="营业利润率 31.6%，营收同比 +18.0%，市盈率 29.3">Operating margin 31.6%, revenue +18.0% YoY, P/E 29.3</span></div>
+  <div class="dim-gauge">
+    <div class="dim-gt"><div class="dim-gz"></div>
+      <div class="dim-gf" style="left:50.0%;width:13.7%;background:#86EFAC"></div></div>
+    <div class="dim-gl"><span>−1</span><span>0</span><span>+1</span></div>
+  </div>
+  <div class="dim-detail"><div class="dim-detail-inner"><div class="dim-detail-content">
+    <div><div class="dd-label">① <span class="bi" data-en="Analysis Process" data-zh="分析过程">Analysis Process</span></div>
+      <div class="dd-text"><span class="bi" data-en="Blend four fundamentals signals: P/E ratio vs sector, operating margin band, revenue YoY growth, and debt/equity level. Each scored −1 to +1, averaged." data-zh="综合四项基本面信号：市盈率与板块对比、营业利润率区间、营收同比增速、资产负债率。每项 −1 到 +1，取均值。">Blend four fundamentals signals: P/E ratio vs sector, operating margin band, revenue YoY growth, and debt/equity level. Each scored −1 to +1, averaged.</span></div></div>
+    <div><div class="dd-label">② <span class="bi" data-en="Calculation" data-zh="计算步骤">Calculation</span></div>
+      <div class="dd-calc"><span class="bi" data-en="P/E 29.33 (neutral), margin 31.6% (strong, +0.4), revenue +18.0% (healthy, +0.3), D/E 0.16 (low, +0.2) → avg +0.275" data-zh="市盈率 29.33（中性），利润率 31.6%（强势），营收增速 +18.0%（健康），D/E 0.16（偏低）→ 均值 +0.275">P/E 29.33 (neutral), margin 31.6% (strong, +0.4), revenue +18.0% (healthy, +0.3), D/E 0.16 (low, +0.2) → avg +0.275</span></div></div>
+    <div><div class="dd-label">③ <span class="bi" data-en="Raw Data" data-zh="原始数据">Raw Data</span></div>
+      <div class="dd-table"><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="P/E Ratio" data-zh="市盈率">P/E Ratio</span></span><span class="dd-tv">29.33</span></div><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="Operating Margin" data-zh="营业利润率">Operating Margin</span></span><span class="dd-tv">31.6%</span></div><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="Revenue Growth YoY" data-zh="营收同比">Revenue Growth YoY</span></span><span class="dd-tv">+18.0%</span></div><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="Debt / Equity" data-zh="资产负债率">Debt / Equity</span></span><span class="dd-tv">0.16</span></div></div></div>
+    <div><div class="dd-label">④ <span class="bi" data-en="Interpretation" data-zh="打分解读">Interpretation</span></div>
+      <div class="dd-text"><span class="bi" data-en="Strong margin and healthy growth are the bright spots; the P/E is rich but justified by profitability. Overall a modestly bullish fundamental footing." data-zh="强利润率 + 健康的增长是亮点；市盈率偏高但有盈利能力支撑。整体属于温和偏多的基本面。">Strong margin and healthy growth are the bright spots; the P/E is rich but justified by profitability. Overall a modestly bullish fundamental footing.</span></div></div>
+  </div></div></div>
+</div></div>
+<div class="dim-shell reveal"><div class="dim" data-key="analyst_sentiment" data-open="0">
+  <div class="dim-head" onclick="toggleDim(this)">
+    <span class="dim-idx">03</span>
+    <div class="dim-info">
+      <div class="dim-name"><span class="bi" data-en="Analyst Sentiment" data-zh="分析师情绪">Analyst Sentiment</span></div>
+      <div class="dim-tags">
+        <span class="dim-wt"><span class="bi" data-en="Weight" data-zh="权重">Weight</span> 20%</span>
+        <span class="dim-sc" style="background:#36DD0C;color:var(--bg)">+1.00</span>
+      </div>
+    </div>
+    <span class="dim-chv">▸</span>
+  </div>
+  <div class="dim-one"><span class="bi" data-en="Strong Buy — +18.6% upside to $376.29 (56 analysts)" data-zh="Strong Buy — 距目标价 $376.29 有 +18.6% 上行空间（56 位分析师）">Strong Buy — +18.6% upside to $376.29 (56 analysts)</span></div>
+  <div class="dim-gauge">
+    <div class="dim-gt"><div class="dim-gz"></div>
+      <div class="dim-gf" style="left:50.0%;width:50.0%;background:#36DD0C"></div></div>
+    <div class="dim-gl"><span>−1</span><span>0</span><span>+1</span></div>
+  </div>
+  <div class="dim-detail"><div class="dim-detail-inner"><div class="dim-detail-content">
+    <div><div class="dd-label">① <span class="bi" data-en="Analysis Process" data-zh="分析过程">Analysis Process</span></div>
+      <div class="dd-text"><span class="bi" data-en="Aggregate the analyst consensus rating and compare current price to the mean price target. Score = function of rating tier × upside magnitude, clipped to [−1, +1]." data-zh="汇总分析师一致评级并对比当前价与平均目标价。得分 = 评级等级 × 上行幅度的函数，限制在 [−1, +1] 区间。">Aggregate the analyst consensus rating and compare current price to the mean price target. Score = function of rating tier × upside magnitude, clipped to [−1, +1].</span></div></div>
+    <div><div class="dd-label">② <span class="bi" data-en="Calculation" data-zh="计算步骤">Calculation</span></div>
+      <div class="dd-calc"><span class="bi" data-en="Rating &#x27;Strong Buy&#x27; + upside +18.58% across 56 analysts → score +1.00" data-zh="评级 &#x27;Strong Buy&#x27; + 上行 +18.58%，56 位分析师 → 得分 +1.00">Rating &#x27;Strong Buy&#x27; + upside +18.58% across 56 analysts → score +1.00</span></div></div>
+    <div><div class="dd-label">③ <span class="bi" data-en="Raw Data" data-zh="原始数据">Raw Data</span></div>
+      <div class="dd-table"><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="Consensus Rating" data-zh="一致评级">Consensus Rating</span></span><span class="dd-tv">Strong Buy</span></div><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="Price Target" data-zh="目标价">Price Target</span></span><span class="dd-tv">$376.29</span></div><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="Current Price" data-zh="当前价">Current Price</span></span><span class="dd-tv">$317.32</span></div><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="Upside" data-zh="上行空间">Upside</span></span><span class="dd-tv">+18.58%</span></div><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="# Analysts" data-zh="分析师数量"># Analysts</span></span><span class="dd-tv">56</span></div></div></div>
+    <div><div class="dd-label">④ <span class="bi" data-en="Interpretation" data-zh="打分解读">Interpretation</span></div>
+      <div class="dd-text"><span class="bi" data-en="Street is unambiguously positive — near-unanimous Strong Buy plus ~19% implied upside across 56 analysts. This is the single highest-scoring dimension." data-zh="华尔街态度明确积极——几乎一致的 Strong Buy 加上 56 位分析师测算的约 19% 上行空间。是本次得分最高的维度。">Street is unambiguously positive — near-unanimous Strong Buy plus ~19% implied upside across 56 analysts. This is the single highest-scoring dimension.</span></div></div>
+  </div></div></div>
+</div></div>
+<div class="dim-shell reveal"><div class="dim" data-key="historical_patterns" data-open="0">
+  <div class="dim-head" onclick="toggleDim(this)">
+    <span class="dim-idx">04</span>
+    <div class="dim-info">
+      <div class="dim-name"><span class="bi" data-en="Historical Patterns" data-zh="历史表现">Historical Patterns</span></div>
+      <div class="dim-tags">
+        <span class="dim-wt"><span class="bi" data-en="Weight" data-zh="权重">Weight</span> 10%</span>
+        <span class="dim-sc" style="background:#4ADE80;color:var(--bg)">+0.50</span>
+      </div>
+    </div>
+    <span class="dim-chv">▸</span>
+  </div>
+  <div class="dim-one"><span class="bi" data-en="3/4 quarters beat · avg post-earnings reaction -0.34%" data-zh="过去 4 季度 3 次超预期 · 财报后平均反应 -0.34%">3/4 quarters beat · avg post-earnings reaction -0.34%</span></div>
+  <div class="dim-gauge">
+    <div class="dim-gt"><div class="dim-gz"></div>
+      <div class="dim-gf" style="left:50.0%;width:25.0%;background:#4ADE80"></div></div>
+    <div class="dim-gl"><span>−1</span><span>0</span><span>+1</span></div>
+  </div>
+  <div class="dim-detail"><div class="dim-detail-inner"><div class="dim-detail-content">
+    <div><div class="dd-label">① <span class="bi" data-en="Analysis Process" data-zh="分析过程">Analysis Process</span></div>
+      <div class="dd-text"><span class="bi" data-en="Look back at the last four earnings prints: count beats, compute avg 1-day price reaction." data-zh="回顾过去四次财报：统计超预期次数，计算财报次日平均涨跌幅。">Look back at the last four earnings prints: count beats, compute avg 1-day price reaction.</span></div></div>
+    <div><div class="dd-label">② <span class="bi" data-en="Calculation" data-zh="计算步骤">Calculation</span></div>
+      <div class="dd-calc"><span class="bi" data-en="Beats: 3/4, avg reaction -0.34% → score +0.50" data-zh="超预期次数：3/4，平均反应 -0.34% → 得分 +0.50">Beats: 3/4, avg reaction -0.34% → score +0.50</span></div></div>
+    <div><div class="dd-label">③ <span class="bi" data-en="Raw Data" data-zh="原始数据">Raw Data</span></div>
+      <div class="dd-table"><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="Beats (last 4Q)" data-zh="过去 4 季度超预期">Beats (last 4Q)</span></span><span class="dd-tv">3/4</span></div><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="Avg Reaction" data-zh="财报后平均反应">Avg Reaction</span></span><span class="dd-tv">-0.34%</span></div></div></div>
+    <div><div class="dd-label">④ <span class="bi" data-en="Interpretation" data-zh="打分解读">Interpretation</span></div>
+      <div class="dd-text"><span class="bi" data-en="Track record is positive but post-earnings drift is flat-to-slightly-negative — investors tend to take profits on good prints." data-zh="基本面记录良好，但财报后的短期走势往往平盘甚至小跌——机构倾向于在好消息下减仓兑现。">Track record is positive but post-earnings drift is flat-to-slightly-negative — investors tend to take profits on good prints.</span></div></div>
+  </div></div></div>
+</div></div>
+<div class="dim-shell reveal"><div class="dim" data-key="market_context" data-open="0">
+  <div class="dim-head" onclick="toggleDim(this)">
+    <span class="dim-idx">05</span>
+    <div class="dim-info">
+      <div class="dim-name"><span class="bi" data-en="Market Context" data-zh="市场环境">Market Context</span></div>
+      <div class="dim-tags">
+        <span class="dim-wt"><span class="bi" data-en="Weight" data-zh="权重">Weight</span> 10%</span>
+        <span class="dim-sc" style="background:#86EFAC;color:var(--bg)">+0.15</span>
+      </div>
+    </div>
+    <span class="dim-chv">▸</span>
+  </div>
+  <div class="dim-one"><span class="bi" data-en="Bull regime — VIX 21.5 (elevated)" data-zh="Bull 市场——VIX 21.5（elevated）">Bull regime — VIX 21.5 (elevated)</span></div>
+  <div class="dim-gauge">
+    <div class="dim-gt"><div class="dim-gz"></div>
+      <div class="dim-gf" style="left:50.0%;width:7.5%;background:#86EFAC"></div></div>
+    <div class="dim-gl"><span>−1</span><span>0</span><span>+1</span></div>
+  </div>
+  <div class="dim-detail"><div class="dim-detail-inner"><div class="dim-detail-content">
+    <div><div class="dd-label">① <span class="bi" data-en="Analysis Process" data-zh="分析过程">Analysis Process</span></div>
+      <div class="dd-text"><span class="bi" data-en="Classify broader market by combining VIX level, SPY/QQQ trend, and safe-haven flows." data-zh="结合 VIX 水平、SPY/QQQ 趋势和避险资产流向判断大盘状态。">Classify broader market by combining VIX level, SPY/QQQ trend, and safe-haven flows.</span></div></div>
+    <div><div class="dd-label">② <span class="bi" data-en="Calculation" data-zh="计算步骤">Calculation</span></div>
+      <div class="dd-calc"><span class="bi" data-en="Regime = bull, VIX 21.54 (elevated), no risk-off → score +0.15" data-zh="市场状态 = 牛市，VIX 21.54（偏高），无避险 → 得分 +0.15">Regime = bull, VIX 21.54 (elevated), no risk-off → score +0.15</span></div></div>
+    <div><div class="dd-label">③ <span class="bi" data-en="Raw Data" data-zh="原始数据">Raw Data</span></div>
+      <div class="dd-table"><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="VIX" data-zh="VIX">VIX</span></span><span class="dd-tv">21.54 (elevated)</span></div><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="SPY 10d" data-zh="SPY 10 日">SPY 10d</span></span><span class="dd-tv">+2.92%</span></div><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="QQQ 10d" data-zh="QQQ 10 日">QQQ 10d</span></span><span class="dd-tv">+3.11%</span></div><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="Risk-Off" data-zh="避险信号">Risk-Off</span></span><span class="dd-tv">No / 无</span></div></div></div>
+    <div><div class="dd-label">④ <span class="bi" data-en="Interpretation" data-zh="打分解读">Interpretation</span></div>
+      <div class="dd-text"><span class="bi" data-en="Bull tape is supportive, but VIX 21.5 is a yellow flag — realized volatility is high." data-zh="牛市结构提供支撑，但 VIX 21.5 是黄灯——说明实际波动偏高。">Bull tape is supportive, but VIX 21.5 is a yellow flag — realized volatility is high.</span></div></div>
+  </div></div></div>
+</div></div>
+<div class="dim-shell reveal"><div class="dim" data-key="sector_performance" data-open="0">
+  <div class="dim-head" onclick="toggleDim(this)">
+    <span class="dim-idx">06</span>
+    <div class="dim-info">
+      <div class="dim-name"><span class="bi" data-en="Sector Performance" data-zh="板块表现">Sector Performance</span></div>
+      <div class="dim-tags">
+        <span class="dim-wt"><span class="bi" data-en="Weight" data-zh="权重">Weight</span> 15%</span>
+        <span class="dim-sc" style="background:#FBBF24;color:var(--bg)">-0.30</span>
+      </div>
+    </div>
+    <span class="dim-chv">▸</span>
+  </div>
+  <div class="dim-one"><span class="bi" data-en="Stock +3.6% vs Communication Services -2.9% (1m)" data-zh="个股 +3.6% vs Communication Services -2.9%（1月）">Stock +3.6% vs Communication Services -2.9% (1m)</span></div>
+  <div class="dim-gauge">
+    <div class="dim-gt"><div class="dim-gz"></div>
+      <div class="dim-gf" style="left:35.0%;width:15.0%;background:#FBBF24"></div></div>
+    <div class="dim-gl"><span>−1</span><span>0</span><span>+1</span></div>
+  </div>
+  <div class="dim-detail"><div class="dim-detail-inner"><div class="dim-detail-content">
+    <div><div class="dd-label">① <span class="bi" data-en="Analysis Process" data-zh="分析过程">Analysis Process</span></div>
+      <div class="dd-text"><span class="bi" data-en="Compare 1-month stock return against sector ETF." data-zh="比较 1 个月个股收益与板块 ETF。">Compare 1-month stock return against sector ETF.</span></div></div>
+    <div><div class="dd-label">② <span class="bi" data-en="Calculation" data-zh="计算步骤">Calculation</span></div>
+      <div class="dd-calc"><span class="bi" data-en="Stock +3.58% vs sector -2.88% → RS +-124.2pp → -0.30" data-zh="个股 +3.58% vs 板块 -2.88% → 相对强度 +-124.2pp → -0.30">Stock +3.58% vs sector -2.88% → RS +-124.2pp → -0.30</span></div></div>
+    <div><div class="dd-label">③ <span class="bi" data-en="Raw Data" data-zh="原始数据">Raw Data</span></div>
+      <div class="dd-table"><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="Sector" data-zh="板块">Sector</span></span><span class="dd-tv">Communication Services</span></div><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="Stock 1m" data-zh="个股 1 月">Stock 1m</span></span><span class="dd-tv">+3.58%</span></div><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="Sector 1m" data-zh="板块 1 月">Sector 1m</span></span><span class="dd-tv">-2.88%</span></div><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="Rel. Strength" data-zh="相对强度">Rel. Strength</span></span><span class="dd-tv">+-124.18pp</span></div></div></div>
+    <div><div class="dd-label">④ <span class="bi" data-en="Interpretation" data-zh="打分解读">Interpretation</span></div>
+      <div class="dd-text"><span class="bi" data-en="Alphabet is outperforming its sector, but Comm Services is -2.9% — a headwind." data-zh="Alphabet 明显跑赢板块，但通信服务板块 -2.9%——拖累。">Alphabet is outperforming its sector, but Comm Services is -2.9% — a headwind.</span></div></div>
+  </div></div></div>
+</div></div>
+<div class="dim-shell reveal"><div class="dim" data-key="momentum" data-open="0">
+  <div class="dim-head" onclick="toggleDim(this)">
+    <span class="dim-idx">07</span>
+    <div class="dim-info">
+      <div class="dim-name"><span class="bi" data-en="Momentum" data-zh="动量">Momentum</span></div>
+      <div class="dim-tags">
+        <span class="dim-wt"><span class="bi" data-en="Weight" data-zh="权重">Weight</span> 15%</span>
+        <span class="dim-sc" style="background:#878790;color:var(--bg)">+0.00</span>
+      </div>
+    </div>
+    <span class="dim-chv">▸</span>
+  </div>
+  <div class="dim-one"><span class="bi" data-en="RSI(14) 55.7 (neutral), volume 0.78× avg" data-zh="RSI(14) 55.7（neutral），成交量 0.78× 平均">RSI(14) 55.7 (neutral), volume 0.78× avg</span></div>
+  <div class="dim-gauge">
+    <div class="dim-gt"><div class="dim-gz"></div>
+      <div class="dim-gf" style="left:50.0%;width:0.0%;background:#878790"></div></div>
+    <div class="dim-gl"><span>−1</span><span>0</span><span>+1</span></div>
+  </div>
+  <div class="dim-detail"><div class="dim-detail-inner"><div class="dim-detail-content">
+    <div><div class="dd-label">① <span class="bi" data-en="Analysis Process" data-zh="分析过程">Analysis Process</span></div>
+      <div class="dd-text"><span class="bi" data-en="Combine RSI(14), proximity to 52-week extremes, and volume ratio." data-zh="综合 RSI(14)、相对 52 周高低点的位置、以及成交量比。">Combine RSI(14), proximity to 52-week extremes, and volume ratio.</span></div></div>
+    <div><div class="dd-label">② <span class="bi" data-en="Calculation" data-zh="计算步骤">Calculation</span></div>
+      <div class="dd-calc"><span class="bi" data-en="RSI 55.71 (neutral), volume 0.78× → 0.00" data-zh="RSI 55.71（中性），成交量 0.78× → 0.00">RSI 55.71 (neutral), volume 0.78× → 0.00</span></div></div>
+    <div><div class="dd-label">③ <span class="bi" data-en="Raw Data" data-zh="原始数据">Raw Data</span></div>
+      <div class="dd-table"><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="RSI (14d)" data-zh="RSI（14 日）">RSI (14d)</span></span><span class="dd-tv">55.71</span></div><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="Volume Ratio" data-zh="成交量比">Volume Ratio</span></span><span class="dd-tv">0.78×</span></div></div></div>
+    <div><div class="dd-label">④ <span class="bi" data-en="Interpretation" data-zh="打分解读">Interpretation</span></div>
+      <div class="dd-text"><span class="bi" data-en="Neutral momentum. Below-average volume hints buyers haven&#x27;t fully committed." data-zh="完全中性的动量读数。成交量低于平均说明买盘尚未坚决。">Neutral momentum. Below-average volume hints buyers haven&#x27;t fully committed.</span></div></div>
+  </div></div></div>
+</div></div>
+<div class="dim-shell reveal"><div class="dim" data-key="sentiment_analysis" data-open="0">
+  <div class="dim-head" onclick="toggleDim(this)">
+    <span class="dim-idx">08</span>
+    <div class="dim-info">
+      <div class="dim-name"><span class="bi" data-en="Market Sentiment" data-zh="市场情绪">Market Sentiment</span></div>
+      <div class="dim-tags">
+        <span class="dim-wt"><span class="bi" data-en="Weight" data-zh="权重">Weight</span> 10%</span>
+        <span class="dim-sc" style="background:#878790;color:var(--bg)">+0.13</span>
+      </div>
+    </div>
+    <span class="dim-chv">▸</span>
+  </div>
+  <div class="dim-one"><span class="bi" data-en="Fear &amp; Greed 32 (fear) · short interest 1.37%" data-zh="恐惧贪婪 32（fear）· 空头 1.37%">Fear &amp; Greed 32 (fear) · short interest 1.37%</span></div>
+  <div class="dim-gauge">
+    <div class="dim-gt"><div class="dim-gz"></div>
+      <div class="dim-gf" style="left:50.0%;width:6.7%;background:#878790"></div></div>
+    <div class="dim-gl"><span>−1</span><span>0</span><span>+1</span></div>
+  </div>
+  <div class="dim-detail"><div class="dim-detail-inner"><div class="dim-detail-content">
+    <div><div class="dd-label">① <span class="bi" data-en="Analysis Process" data-zh="分析过程">Analysis Process</span></div>
+      <div class="dd-text"><span class="bi" data-en="Blend 5 sentiment sub-indicators: CNN Fear &amp; Greed, short interest, VIX structure, insider trades, put/call ratio." data-zh="综合 5 项情绪子指标：CNN 恐惧贪婪、空头占比、VIX 结构、内部人交易、Put/Call 比。">Blend 5 sentiment sub-indicators: CNN Fear &amp; Greed, short interest, VIX structure, insider trades, put/call ratio.</span></div></div>
+    <div><div class="dd-label">② <span class="bi" data-en="Calculation" data-zh="计算步骤">Calculation</span></div>
+      <div class="dd-calc"><span class="bi" data-en="F&amp;G &#x27;fear&#x27; +0.20 · SI 1.37% +0.20 · VIX flat +0.00 → avg +0.133" data-zh="恐惧贪婪 +0.20 · 空头 1.37% +0.20 · VIX 平坦 +0.00 → 均值 +0.133">F&amp;G &#x27;fear&#x27; +0.20 · SI 1.37% +0.20 · VIX flat +0.00 → avg +0.133</span></div></div>
+    <div><div class="dd-label">③ <span class="bi" data-en="Raw Data" data-zh="原始数据">Raw Data</span></div>
+      <div class="dd-table"><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="Fear &amp; Greed" data-zh="恐惧贪婪">Fear &amp; Greed</span></span><span class="dd-tv">32.0 (fear)</span></div><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="Short Interest" data-zh="空头占比">Short Interest</span></span><span class="dd-tv">1.37%</span></div><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="VIX Structure" data-zh="VIX 结构">VIX Structure</span></span><span class="dd-tv">flat</span></div><div class="dd-tr"><span class="dd-tk"><span class="bi" data-en="Indicators Used" data-zh="参与指标">Indicators Used</span></span><span class="dd-tv">3/5</span></div></div></div>
+    <div><div class="dd-label">④ <span class="bi" data-en="Interpretation" data-zh="打分解读">Interpretation</span></div>
+      <div class="dd-text"><span class="bi" data-en="Contrarian backdrop mildly bullish: retail fear + tiny short float. But only 3/5 indicators available." data-zh="逆向背景温和偏多：散户恐惧 + 极低空头。但仅有 3/5 指标可用。">Contrarian backdrop mildly bullish: retail fear + tiny short float. But only 3/5 indicators available.</span></div></div>
+  </div></div></div>
+</div></div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<script>
+/* ═══ State ═══ */
+let lang='en',currentTab='cmp',currentKlineTicker='GOOGL';
+const KLINE_DATA={"GOOGL": [{"date": "2026-01-12", "open": 325.57, "high": 333.81, "low": 324.77, "close": 331.63, "volume": 33923900}, {"date": "2026-01-13", "open": 334.71, "high": 340.25, "low": 333.39, "close": 335.73, "volume": 33517600}, {"date": "2026-01-14", "open": 334.82, "high": 336.28, "low": 330.25, "close": 335.6, "volume": 28525600}, {"date": "2026-01-15", "open": 337.41, "high": 337.45, "low": 330.51, "close": 332.55, "volume": 28442400}, {"date": "2026-01-16", "open": 334.17, "high": 334.41, "low": 327.47, "close": 329.77, "volume": 40341600}, {"date": "2026-01-20", "open": 320.64, "high": 327.5, "low": 320.2, "close": 321.77, "volume": 35361000}, {"date": "2026-01-21", "open": 320.69, "high": 332.25, "low": 319.13, "close": 328.15, "volume": 35386600}, {"date": "2026-01-22", "open": 334.21, "high": 334.91, "low": 328.52, "close": 330.31, "volume": 26253600}, {"date": "2026-01-23", "open": 332.26, "high": 333.46, "low": 327.22, "close": 327.7, "volume": 27280000}, {"date": "2026-01-26", "open": 327.58, "high": 335.6, "low": 326.77, "close": 333.03, "volume": 26042100}, {"date": "2026-01-27", "open": 335.13, "high": 337.67, "low": 333.25, "close": 334.31, "volume": 21636200}, {"date": "2026-01-28", "open": 335.82, "high": 337.3, "low": 331.71, "close": 335.77, "volume": 27434400}, {"date": "2026-01-29", "open": 340.06, "high": 342.05, "low": 326.31, "close": 338.01, "volume": 39785600}, {"date": "2026-01-30", "open": 339.76, "high": 339.76, "low": 332.06, "close": 337.76, "volume": 31024000}, {"date": "2026-02-02", "open": 335.98, "high": 344.59, "low": 335.39, "close": 343.45, "volume": 32006100}, {"date": "2026-02-03", "open": 347.1, "high": 348.75, "low": 337.23, "close": 339.47, "volume": 36506700}, {"date": "2026-02-04", "open": 342.72, "high": 343.07, "low": 328.29, "close": 332.81, "volume": 70618400}, {"date": "2026-02-05", "open": 312.0, "high": 332.46, "low": 306.24, "close": 331.02, "volume": 88205800}, {"date": "2026-02-06", "open": 326.95, "high": 330.15, "low": 319.69, "close": 322.63, "volume": 56380500}, {"date": "2026-02-09", "open": 320.7, "high": 327.47, "low": 317.04, "close": 324.09, "volume": 39640100}, {"date": "2026-02-10", "open": 320.74, "high": 321.44, "low": 314.39, "close": 318.36, "volume": 39170000}, {"date": "2026-02-11", "open": 318.75, "high": 320.83, "low": 309.44, "close": 310.74, "volume": 45406400}, {"date": "2026-02-12", "open": 311.87, "high": 316.02, "low": 306.98, "close": 308.78, "volume": 47761300}, {"date": "2026-02-13", "open": 307.51, "high": 308.41, "low": 303.5, "close": 305.5, "volume": 38499700}, {"date": "2026-02-17", "open": 299.83, "high": 304.23, "low": 296.04, "close": 301.81, "volume": 39247600}, {"date": "2026-02-18", "open": 301.88, "high": 305.17, "low": 301.04, "close": 303.12, "volume": 28482100}, {"date": "2026-02-19", "open": 301.61, "high": 305.26, "low": 299.83, "close": 302.64, "volume": 25834400}, {"date": "2026-02-20", "open": 304.11, "high": 316.28, "low": 303.69, "close": 314.76, "volume": 53210800}, {"date": "2026-02-23", "open": 318.83, "high": 319.3, "low": 309.65, "close": 311.27, "volume": 31423000}, {"date": "2026-02-24", "open": 310.3, "high": 312.05, "low": 305.71, "close": 310.68, "volume": 25615600}, {"date": "2026-02-25", "open": 311.84, "high": 313.42, "low": 309.22, "close": 312.68, "volume": 29963600}, {"date": "2026-02-26", "open": 312.42, "high": 312.92, "low": 302.14, "close": 307.16, "volume": 36431200}, {"date": "2026-02-27", "open": 303.93, "high": 312.15, "low": 303.59, "close": 311.54, "volume": 44640600}, {"date": "2026-03-02", "open": 303.02, "high": 308.27, "low": 301.09, "close": 306.3, "volume": 34790200}, {"date": "2026-03-03", "open": 298.38, "high": 303.73, "low": 296.5, "close": 303.37, "volume": 35497000}, {"date": "2026-03-04", "open": 302.68, "high": 305.26, "low": 300.54, "close": 302.92, "volume": 29536200}, {"date": "2026-03-05", "open": 302.83, "high": 303.09, "low": 297.78, "close": 300.67, "volume": 35752300}, {"date": "2026-03-06", "open": 295.88, "high": 300.32, "low": 294.97, "close": 298.31, "volume": 25576900}, {"date": "2026-03-09", "open": 294.36, "high": 306.8, "low": 294.08, "close": 306.36, "volume": 29312100}, {"date": "2026-03-10", "open": 306.17, "high": 309.51, "low": 305.57, "close": 307.04, "volume": 23239700}, {"date": "2026-03-11", "open": 306.75, "high": 311.42, "low": 305.92, "close": 308.7, "volume": 24125700}, {"date": "2026-03-12", "open": 306.82, "high": 308.94, "low": 301.03, "close": 303.55, "volume": 24928300}, {"date": "2026-03-13", "open": 307.01, "high": 307.69, "low": 300.44, "close": 302.28, "volume": 23693100}, {"date": "2026-03-16", "open": 304.35, "high": 306.49, "low": 303.02, "close": 305.56, "volume": 23519700}, {"date": "2026-03-17", "open": 305.86, "high": 311.42, "low": 305.5, "close": 310.92, "volume": 21955200}, {"date": "2026-03-18", "open": 309.27, "high": 312.47, "low": 306.93, "close": 307.69, "volume": 20009800}, {"date": "2026-03-19", "open": 304.01, "high": 308.06, "low": 302.35, "close": 307.13, "volume": 25075800}, {"date": "2026-03-20", "open": 305.46, "high": 306.0, "low": 298.27, "close": 301.0, "volume": 44364100}, {"date": "2026-03-23", "open": 302.11, "high": 305.98, "low": 300.93, "close": 302.06, "volume": 29326900}, {"date": "2026-03-24", "open": 299.2, "high": 299.92, "low": 290.33, "close": 290.44, "volume": 36864300}, {"date": "2026-03-25", "open": 293.44, "high": 296.0, "low": 289.24, "close": 290.93, "volume": 29460700}, {"date": "2026-03-26", "open": 287.91, "high": 287.95, "low": 278.5, "close": 280.92, "volume": 39080600}, {"date": "2026-03-27", "open": 277.28, "high": 279.37, "low": 273.95, "close": 274.34, "volume": 35890600}, {"date": "2026-03-30", "open": 276.42, "high": 277.09, "low": 272.11, "close": 273.5, "volume": 35141200}, {"date": "2026-03-31", "open": 278.04, "high": 288.08, "low": 277.09, "close": 287.56, "volume": 43875400}, {"date": "2026-04-01", "open": 290.84, "high": 300.52, "low": 290.41, "close": 297.39, "volume": 37684500}, {"date": "2026-04-02", "open": 290.69, "high": 298.08, "low": 289.45, "close": 295.77, "volume": 21666500}, {"date": "2026-04-06", "open": 295.87, "high": 300.62, "low": 295.18, "close": 299.99, "volume": 16945500}, {"date": "2026-04-07", "open": 302.73, "high": 305.63, "low": 297.72, "close": 305.46, "volume": 23205400}, {"date": "2026-04-08", "open": 320.45, "high": 322.08, "low": 315.02, "close": 317.32, "volume": 33547100}, {"date": "2026-04-09", "open": 315.91, "high": 319.54, "low": 311.06, "close": 318.49, "volume": 23672500}], "NVDA": [{"date": "2026-01-12", "open": 183.21, "high": 187.11, "low": 183.01, "close": 184.93, "volume": 137968500}, {"date": "2026-01-13", "open": 184.99, "high": 188.1, "low": 183.39, "close": 185.8, "volume": 160128900}, {"date": "2026-01-14", "open": 184.31, "high": 184.45, "low": 180.79, "close": 183.13, "volume": 159586100}, {"date": "2026-01-15", "open": 186.49, "high": 189.69, "low": 186.32, "close": 187.04, "volume": 206188600}, {"date": "2026-01-16", "open": 189.07, "high": 190.43, "low": 186.07, "close": 186.22, "volume": 187967200}, {"date": "2026-01-20", "open": 181.89, "high": 182.37, "low": 177.6, "close": 178.06, "volume": 223345300}, {"date": "2026-01-21", "open": 179.04, "high": 185.37, "low": 178.39, "close": 183.31, "volume": 200381000}, {"date": "2026-01-22", "open": 184.74, "high": 186.16, "low": 183.92, "close": 184.83, "volume": 139636600}, {"date": "2026-01-23", "open": 187.49, "high": 189.59, "low": 186.81, "close": 187.66, "volume": 142748100}, {"date": "2026-01-26", "open": 187.15, "high": 189.11, "low": 185.98, "close": 186.46, "volume": 124799600}, {"date": "2026-01-27", "open": 187.23, "high": 189.99, "low": 185.69, "close": 188.51, "volume": 143711600}, {"date": "2026-01-28", "open": 191.26, "high": 192.34, "low": 189.83, "close": 191.51, "volume": 148552700}, {"date": "2026-01-29", "open": 191.33, "high": 193.47, "low": 186.05, "close": 192.5, "volume": 171764400}, {"date": "2026-01-30", "open": 191.2, "high": 194.48, "low": 189.46, "close": 191.12, "volume": 179489500}, {"date": "2026-02-02", "open": 187.19, "high": 190.29, "low": 184.87, "close": 185.6, "volume": 165794100}, {"date": "2026-02-03", "open": 186.23, "high": 186.26, "low": 176.22, "close": 180.33, "volume": 204019600}, {"date": "2026-02-04", "open": 179.45, "high": 179.57, "low": 171.9, "close": 174.18, "volume": 207014100}, {"date": "2026-02-05", "open": 174.92, "high": 176.81, "low": 171.02, "close": 171.87, "volume": 206312900}, {"date": "2026-02-06", "open": 176.68, "high": 186.99, "low": 174.59, "close": 185.4, "volume": 231346200}, {"date": "2026-02-09", "open": 184.25, "high": 193.65, "low": 183.94, "close": 190.03, "volume": 196387400}, {"date": "2026-02-10", "open": 191.37, "high": 192.47, "low": 188.11, "close": 188.53, "volume": 136764800}, {"date": "2026-02-11", "open": 192.44, "high": 193.25, "low": 188.76, "close": 190.04, "volume": 144192700}, {"date": "2026-02-12", "open": 193.02, "high": 193.6, "low": 186.5, "close": 186.93, "volume": 189932500}, {"date": "2026-02-13", "open": 187.47, "high": 187.49, "low": 181.58, "close": 182.8, "volume": 161888000}, {"date": "2026-02-17", "open": 181.74, "high": 187.14, "low": 179.17, "close": 184.96, "volume": 162276900}, {"date": "2026-02-18", "open": 188.74, "high": 190.36, "low": 186.75, "close": 187.97, "volume": 164749100}, {"date": "2026-02-19", "open": 187.05, "high": 188.42, "low": 185.65, "close": 187.89, "volume": 126554500}, {"date": "2026-02-20", "open": 186.56, "high": 190.32, "low": 185.93, "close": 189.81, "volume": 178422300}, {"date": "2026-02-23", "open": 191.39, "high": 193.94, "low": 189.57, "close": 191.54, "volume": 171584800}, {"date": "2026-02-24", "open": 191.48, "high": 193.76, "low": 187.39, "close": 192.84, "volume": 175123600}, {"date": "2026-02-25", "open": 194.44, "high": 197.62, "low": 193.78, "close": 195.55, "volume": 250637100}, {"date": "2026-02-26", "open": 194.26, "high": 194.28, "low": 184.31, "close": 184.88, "volume": 360807900}, {"date": "2026-02-27", "open": 181.24, "high": 182.58, "low": 176.37, "close": 177.18, "volume": 311636500}, {"date": "2026-03-02", "open": 175.0, "high": 183.45, "low": 174.63, "close": 182.47, "volume": 209095300}, {"date": "2026-03-03", "open": 178.48, "high": 180.89, "low": 176.91, "close": 180.04, "volume": 178099400}, {"date": "2026-03-04", "open": 180.43, "high": 184.69, "low": 180.05, "close": 183.03, "volume": 177731200}, {"date": "2026-03-05", "open": 181.16, "high": 184.05, "low": 177.87, "close": 183.33, "volume": 198779700}, {"date": "2026-03-06", "open": 179.83, "high": 182.75, "low": 176.81, "close": 177.81, "volume": 189021900}, {"date": "2026-03-09", "open": 176.82, "high": 182.9, "low": 175.55, "close": 182.64, "volume": 177213600}, {"date": "2026-03-10", "open": 182.39, "high": 186.43, "low": 182.0, "close": 184.76, "volume": 179118500}, {"date": "2026-03-11", "open": 185.91, "high": 187.62, "low": 184.45, "close": 186.03, "volume": 145280400}, {"date": "2026-03-12", "open": 184.05, "high": 184.94, "low": 181.75, "close": 183.14, "volume": 155762700}, {"date": "2026-03-13", "open": 184.92, "high": 186.09, "low": 179.94, "close": 180.25, "volume": 160988400}, {"date": "2026-03-16", "open": 182.97, "high": 188.88, "low": 181.41, "close": 183.22, "volume": 217307400}, {"date": "2026-03-17", "open": 185.06, "high": 185.4, "low": 181.68, "close": 181.93, "volume": 182497800}, {"date": "2026-03-18", "open": 182.48, "high": 183.38, "low": 180.33, "close": 180.4, "volume": 156683100}, {"date": "2026-03-19", "open": 178.01, "high": 179.98, "low": 175.79, "close": 178.56, "volume": 170968500}, {"date": "2026-03-20", "open": 178.0, "high": 178.26, "low": 171.72, "close": 172.7, "volume": 241323500}, {"date": "2026-03-23", "open": 177.26, "high": 178.37, "low": 174.76, "close": 175.64, "volume": 182836300}, {"date": "2026-03-24", "open": 174.83, "high": 176.22, "low": 173.98, "close": 175.2, "volume": 147667800}, {"date": "2026-03-25", "open": 177.1, "high": 181.22, "low": 176.85, "close": 178.68, "volume": 162602100}, {"date": "2026-03-26", "open": 176.07, "high": 176.51, "low": 171.14, "close": 171.24, "volume": 186152200}, {"date": "2026-03-27", "open": 170.0, "high": 170.97, "low": 167.01, "close": 167.52, "volume": 196212700}, {"date": "2026-03-30", "open": 168.78, "high": 169.45, "low": 164.27, "close": 165.17, "volume": 185627000}, {"date": "2026-03-31", "open": 166.97, "high": 174.62, "low": 166.96, "close": 174.4, "volume": 226181300}, {"date": "2026-04-01", "open": 176.0, "high": 177.37, "low": 174.75, "close": 175.75, "volume": 168132000}, {"date": "2026-04-02", "open": 172.18, "high": 177.49, "low": 171.37, "close": 177.39, "volume": 143143200}, {"date": "2026-04-06", "open": 177.16, "high": 177.79, "low": 175.76, "close": 177.64, "volume": 107564300}, {"date": "2026-04-07", "open": 175.73, "high": 178.23, "low": 173.66, "close": 178.1, "volume": 132534900}, {"date": "2026-04-08", "open": 184.5, "high": 185.26, "low": 180.3, "close": 182.08, "volume": 147732700}, {"date": "2026-04-09", "open": 181.84, "high": 184.08, "low": 180.62, "close": 183.91, "volume": 116030600}], "AAPL": [{"date": "2026-01-12", "open": 258.92, "high": 261.06, "low": 256.56, "close": 260.01, "volume": 45263800}, {"date": "2026-01-13", "open": 258.48, "high": 261.57, "low": 258.15, "close": 260.81, "volume": 45730800}, {"date": "2026-01-14", "open": 259.25, "high": 261.58, "low": 256.47, "close": 259.72, "volume": 40019400}, {"date": "2026-01-15", "open": 260.41, "high": 260.8, "low": 256.81, "close": 257.97, "volume": 39388600}, {"date": "2026-01-16", "open": 257.66, "high": 258.66, "low": 254.69, "close": 255.29, "volume": 72142800}, {"date": "2026-01-20", "open": 252.49, "high": 254.55, "low": 243.19, "close": 246.47, "volume": 80267500}, {"date": "2026-01-21", "open": 248.47, "high": 251.32, "low": 244.95, "close": 247.42, "volume": 54641700}, {"date": "2026-01-22", "open": 248.97, "high": 250.77, "low": 247.92, "close": 248.12, "volume": 39708300}, {"date": "2026-01-23", "open": 247.09, "high": 249.18, "low": 244.45, "close": 247.81, "volume": 41689000}, {"date": "2026-01-26", "open": 251.24, "high": 256.32, "low": 249.57, "close": 255.17, "volume": 55969200}, {"date": "2026-01-27", "open": 258.93, "high": 261.71, "low": 257.97, "close": 258.03, "volume": 49648300}, {"date": "2026-01-28", "open": 257.41, "high": 258.62, "low": 254.27, "close": 256.2, "volume": 41288000}, {"date": "2026-01-29", "open": 257.76, "high": 259.41, "low": 254.17, "close": 258.04, "volume": 67253000}, {"date": "2026-01-30", "open": 254.93, "high": 261.66, "low": 251.94, "close": 259.24, "volume": 92443400}, {"date": "2026-02-02", "open": 259.79, "high": 270.24, "low": 258.97, "close": 269.76, "volume": 73913400}, {"date": "2026-02-03", "open": 268.95, "high": 271.63, "low": 267.36, "close": 269.23, "volume": 64394700}, {"date": "2026-02-04", "open": 272.04, "high": 278.69, "low": 272.04, "close": 276.23, "volume": 90545700}, {"date": "2026-02-05", "open": 277.87, "high": 279.24, "low": 272.97, "close": 275.65, "volume": 52977400}, {"date": "2026-02-06", "open": 276.86, "high": 280.65, "low": 276.67, "close": 277.86, "volume": 50453400}, {"date": "2026-02-09", "open": 277.91, "high": 278.2, "low": 271.7, "close": 274.62, "volume": 44623400}, {"date": "2026-02-10", "open": 274.89, "high": 275.37, "low": 272.94, "close": 273.68, "volume": 34376900}, {"date": "2026-02-11", "open": 274.7, "high": 280.18, "low": 274.45, "close": 275.5, "volume": 51931300}, {"date": "2026-02-12", "open": 275.59, "high": 275.72, "low": 260.18, "close": 261.73, "volume": 81077200}, {"date": "2026-02-13", "open": 262.01, "high": 262.23, "low": 255.45, "close": 255.78, "volume": 56290700}, {"date": "2026-02-17", "open": 258.05, "high": 266.29, "low": 255.54, "close": 263.88, "volume": 58469100}, {"date": "2026-02-18", "open": 263.6, "high": 266.82, "low": 262.45, "close": 264.35, "volume": 34203300}, {"date": "2026-02-19", "open": 262.6, "high": 264.48, "low": 260.05, "close": 260.58, "volume": 30845300}, {"date": "2026-02-20", "open": 258.97, "high": 264.75, "low": 258.16, "close": 264.58, "volume": 42070500}, {"date": "2026-02-23", "open": 263.49, "high": 269.43, "low": 263.38, "close": 266.18, "volume": 37308200}, {"date": "2026-02-24", "open": 267.86, "high": 274.89, "low": 267.71, "close": 272.14, "volume": 47014600}, {"date": "2026-02-25", "open": 271.78, "high": 274.94, "low": 271.05, "close": 274.23, "volume": 33714300}, {"date": "2026-02-26", "open": 274.95, "high": 276.11, "low": 270.8, "close": 272.95, "volume": 32345100}, {"date": "2026-02-27", "open": 272.81, "high": 272.81, "low": 262.89, "close": 264.18, "volume": 72366500}, {"date": "2026-03-02", "open": 262.41, "high": 266.53, "low": 260.2, "close": 264.72, "volume": 41827900}, {"date": "2026-03-03", "open": 263.48, "high": 265.56, "low": 260.13, "close": 263.75, "volume": 38568900}, {"date": "2026-03-04", "open": 264.65, "high": 266.15, "low": 261.42, "close": 262.52, "volume": 39803100}, {"date": "2026-03-05", "open": 260.79, "high": 261.56, "low": 257.25, "close": 260.29, "volume": 49658600}, {"date": "2026-03-06", "open": 258.63, "high": 258.77, "low": 254.37, "close": 257.46, "volume": 41120000}, {"date": "2026-03-09", "open": 255.69, "high": 261.15, "low": 253.68, "close": 259.88, "volume": 38218500}, {"date": "2026-03-10", "open": 257.65, "high": 262.48, "low": 256.95, "close": 260.83, "volume": 30590800}, {"date": "2026-03-11", "open": 261.09, "high": 262.13, "low": 259.55, "close": 260.81, "volume": 26218900}, {"date": "2026-03-12", "open": 258.66, "high": 258.95, "low": 254.18, "close": 255.76, "volume": 40794000}, {"date": "2026-03-13", "open": 255.48, "high": 256.33, "low": 249.52, "close": 250.12, "volume": 36930000}, {"date": "2026-03-16", "open": 252.11, "high": 253.89, "low": 249.88, "close": 252.82, "volume": 32074200}, {"date": "2026-03-17", "open": 252.96, "high": 255.13, "low": 252.18, "close": 254.23, "volume": 32361600}, {"date": "2026-03-18", "open": 252.63, "high": 254.94, "low": 249.0, "close": 249.94, "volume": 35757900}, {"date": "2026-03-19", "open": 249.4, "high": 251.83, "low": 247.3, "close": 248.96, "volume": 34864100}, {"date": "2026-03-20", "open": 247.98, "high": 249.2, "low": 246.0, "close": 247.99, "volume": 88331100}, {"date": "2026-03-23", "open": 253.97, "high": 254.6, "low": 250.28, "close": 251.49, "volume": 40546100}, {"date": "2026-03-24", "open": 250.35, "high": 254.83, "low": 249.55, "close": 251.64, "volume": 45152300}, {"date": "2026-03-25", "open": 254.1, "high": 255.0, "low": 251.6, "close": 252.62, "volume": 28476700}, {"date": "2026-03-26", "open": 252.12, "high": 257.0, "low": 250.77, "close": 252.89, "volume": 41796700}, {"date": "2026-03-27", "open": 253.9, "high": 255.49, "low": 248.07, "close": 248.8, "volume": 47900000}, {"date": "2026-03-30", "open": 250.07, "high": 250.87, "low": 245.51, "close": 246.63, "volume": 39446200}, {"date": "2026-03-31", "open": 247.91, "high": 255.48, "low": 247.1, "close": 253.79, "volume": 49598100}, {"date": "2026-04-01", "open": 254.08, "high": 256.18, "low": 253.33, "close": 255.63, "volume": 40059400}, {"date": "2026-04-02", "open": 254.2, "high": 256.13, "low": 250.65, "close": 255.92, "volume": 31289400}, {"date": "2026-04-06", "open": 256.51, "high": 262.16, "low": 256.46, "close": 258.86, "volume": 29329900}, {"date": "2026-04-07", "open": 256.16, "high": 256.2, "low": 245.7, "close": 253.5, "volume": 62148000}, {"date": "2026-04-08", "open": 258.45, "high": 259.75, "low": 256.53, "close": 258.9, "volume": 41032800}, {"date": "2026-04-09", "open": 259.0, "high": 261.12, "low": 256.07, "close": 260.49, "volume": 28084500}]};
+
+/* ═══ Analysis mode toggle ═══ */
+function setMode(mode,btn){
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const ticker=document.getElementById('f-ticker');
+  const hint=document.getElementById('tickerHint');
+  if(mode==='single'){
+    ticker.placeholder='e.g. GOOGL';
+    if(hint)hint.style.display='none';
+  }else{
+    ticker.placeholder='e.g. GOOGL, NVDA, AAPL';
+    if(hint)hint.style.display='block';
+  }
+}
+
+/* ═══ Execute Analysis (demo) ═══ */
+function executeAnalysis(){
+  const btn=document.querySelector('.btn-exec');
+  const origText=btn.innerHTML;
+  btn.innerHTML='⏳ Analyzing...';
+  btn.style.opacity='0.7';
+  btn.style.pointerEvents='none';
+  setTimeout(()=>{
+    btn.innerHTML='✓ Analysis Complete';
+    btn.style.opacity='1';
+    setTimeout(()=>{
+      btn.innerHTML=origText;
+      btn.style.pointerEvents='auto';
+    },1500);
+  },1200);
+}
+
+/* ═══ Language ═══ */
+function setLang(l){
+  lang=l;
+  document.querySelectorAll('.bi').forEach(e=>{e.textContent=e.getAttribute('data-'+l)||''});
+  document.querySelectorAll('.bi-rich').forEach(e=>{e.innerHTML=e.getAttribute('data-rich-'+l)||''});
+  document.querySelectorAll('.lang-toggle button').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+/* ═══ Tabs ═══ */
+function setTab(t){
+  currentTab=t;
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.getElementById('tab-'+t).classList.add('on');
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  event.target.classList.add('on');
+  // Re-trigger reveals
+  requestAnimationFrame(()=>initReveals());
+  // Redraw K-line for deep dive
+  if(t==='dd')drawKline('klineCanvasDD','GOOGL');
+}
+
+/* ═══ Dimension toggle ═══ */
+function toggleDim(head){
+  const d=head.closest('.dim');
+  d.setAttribute('data-open',d.getAttribute('data-open')==='1'?'0':'1');
+}
+
+/* ═══ Dimension card toggle ═══ */
+function toggleDc(head){
+  const dc=head.closest('.dc');
+  dc.dataset.open=dc.dataset.open==='true'?'false':'true';
+}
+
+/* ═══ Stock visibility ═══ */
+function toggleStock(tk){
+  const c=document.querySelector('.shell');
+  const chk=document.getElementById('chk-'+tk.toLowerCase());
+  if(chk.checked)c.removeAttribute('data-hide-'+tk.toLowerCase());
+  else c.setAttribute('data-hide-'+tk.toLowerCase(),'');
+}
+
+/* ═══ K-line Chart (Candlestick) ═══ */
+function setKlineTicker(tk,btn){
+  currentKlineTicker=tk;
+  const wrap=btn?btn.closest('.kline-header'):null;
+  const scope=wrap||document;
+  scope.querySelectorAll('.kline-tab').forEach(b=>b.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  drawKline('klineCanvas',tk);
+}
+function setKlinePeriod(period,btn){
+  // Toggle active pill
+  document.querySelectorAll('.kp-btn').forEach(b=>b.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  // In a real app this would re-fetch data for the period;
+  // for now it's a UI placeholder that demonstrates the control
+}
+
+/* ── K-line state per canvas ── */
+const klineState={};
+
+function drawKline(canvasId,ticker){
+  const canvas=document.getElementById(canvasId);
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const rect=canvas.getBoundingClientRect();
+  canvas.width=rect.width*dpr;
+  canvas.height=rect.height*dpr;
+  ctx.scale(dpr,dpr);
+  const W=rect.width,H=rect.height;
+
+  const data=KLINE_DATA[ticker];
+  if(!data||!data.length)return;
+
+  // Store state for mouse interaction
+  const pad={top:24,bottom:44,left:56,right:56};
+  const cW=W-pad.left-pad.right;
+  const cH=H-pad.top-pad.bottom;
+  const volH=cH*0.18; // bottom 18% for volume
+  const priceH=cH-volH-8; // price area
+
+  let hi=-Infinity,lo=Infinity,maxVol=0;
+  data.forEach(d=>{hi=Math.max(hi,d.high);lo=Math.min(lo,d.low);maxVol=Math.max(maxVol,d.volume)});
+  const margin=(hi-lo)*0.05;
+  hi+=margin;lo-=margin;
+
+  const gap=cW/data.length;
+  const barW=Math.max(2,gap*0.55);
+
+  const toX=i=>pad.left+gap*i+gap/2;
+  const toY=v=>pad.top+priceH*(1-(v-lo)/(hi-lo));
+  const toVolY=v=>pad.top+priceH+8+volH*(1-v/maxVol);
+
+  // Save state
+  const state={data,ticker,pad,W,H,cW,cH,priceH,volH,hi,lo,maxVol,gap,barW,toX,toY,toVolY};
+  klineState[canvasId]=state;
+
+  // Draw static parts
+  renderKlineStatic(ctx,state);
+
+  // Bind mouse events (once)
+  if(!canvas._klineBound){
+    canvas._klineBound=true;
+    canvas.style.cursor='crosshair';
+
+    canvas.addEventListener('mousemove',(e)=>{
+      const cr=canvas.getBoundingClientRect();
+      const mx=(e.clientX-cr.left);
+      const my=(e.clientY-cr.top);
+      const st=klineState[canvasId];
+      if(!st)return;
+      renderKlineStatic(ctx,st);
+      renderKlineCrosshair(ctx,st,mx,my);
+      updateKlineOhlcv(st,mx);
+    });
+
+    canvas.addEventListener('mouseleave',()=>{
+      const st=klineState[canvasId];
+      if(!st)return;
+      renderKlineStatic(ctx,st);
+      const bar=document.getElementById('klineOhlcv');
+      if(bar)bar.innerHTML='';
+    });
+  }
+}
+
+function renderKlineStatic(ctx,s){
+  const {data,pad,W,H,priceH,volH,hi,lo,maxVol,gap,barW,toX,toY,toVolY}=s;
+  ctx.clearRect(0,0,W,H);
+
+  // Grid
+  ctx.strokeStyle='rgba(255,255,255,0.04)';
+  ctx.lineWidth=1;
+  for(let i=0;i<=5;i++){
+    const y=pad.top+priceH*i/5;
+    ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(W-pad.right,y);ctx.stroke();
+  }
+
+  // Y-axis price labels
+  ctx.fillStyle='rgba(255,255,255,0.25)';
+  ctx.font='10px "JetBrains Mono",monospace';
+  ctx.textAlign='right';
+  for(let i=0;i<=5;i++){
+    const v=lo+(hi-lo)*(1-i/5);
+    ctx.fillText(v.toFixed(1),pad.left-8,pad.top+priceH*i/5+3);
+  }
+
+  // X-axis date labels
+  ctx.textAlign='center';
+  const labelInterval=Math.max(1,Math.floor(data.length/6));
+  for(let i=0;i<data.length;i+=labelInterval){
+    ctx.fillText(data[i].date.slice(5),toX(i),H-4);
+  }
+
+  // Volume bars
+  data.forEach((d,i)=>{
+    const x=toX(i);
+    const isUp=d.close>=d.open;
+    const vy=toVolY(d.volume);
+    const vh=pad.top+priceH+8+volH-vy;
+    ctx.fillStyle=isUp?'rgba(74,222,128,0.2)':'rgba(248,113,113,0.2)';
+    ctx.fillRect(x-barW/2,vy,barW,vh);
+  });
+
+  // Candlesticks
+  data.forEach((d,i)=>{
+    const x=toX(i);
+    const isUp=d.close>=d.open;
+    const green='oklch(73% 0.18 142)';
+    const red='oklch(65% 0.2 25)';
+    const color=isUp?green:red;
+
+    // Wick
+    ctx.strokeStyle=color;ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(x,toY(d.high));ctx.lineTo(x,toY(d.low));ctx.stroke();
+
+    // Body
+    const bTop=toY(Math.max(d.open,d.close));
+    const bBot=toY(Math.min(d.open,d.close));
+    const bH=Math.max(1,bBot-bTop);
+    ctx.fillStyle=color;
+    ctx.fillRect(x-barW/2,bTop,barW,bH);
+  });
+
+  // Last price dashed line
+  const lastC=data[data.length-1].close;
+  ctx.strokeStyle='oklch(73% 0.18 142 / 0.5)';
+  ctx.lineWidth=1;ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(pad.left,toY(lastC));ctx.lineTo(W-pad.right,toY(lastC));ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Last price label (right side)
+  ctx.fillStyle='oklch(73% 0.18 142)';
+  ctx.font='bold 10px "JetBrains Mono",monospace';
+  ctx.textAlign='left';
+  ctx.fillText('$'+lastC.toFixed(2),W-pad.right+4,toY(lastC)+4);
+}
+
+function renderKlineCrosshair(ctx,s,mx,my){
+  const {data,pad,W,H,priceH,hi,lo,gap,toX,toY}=s;
+
+  // Find nearest candle
+  const idx=Math.round((mx-pad.left-gap/2)/gap);
+  if(idx<0||idx>=data.length)return;
+  const d=data[idx];
+  const cx=toX(idx);
+
+  // Vertical crosshair
+  ctx.strokeStyle='rgba(255,255,255,0.15)';
+  ctx.lineWidth=1;ctx.setLineDash([3,3]);
+  ctx.beginPath();ctx.moveTo(cx,pad.top);ctx.lineTo(cx,H-pad.bottom);ctx.stroke();
+
+  // Horizontal crosshair at mouse Y (only in price area)
+  if(my>=pad.top&&my<=pad.top+priceH){
+    ctx.beginPath();ctx.moveTo(pad.left,my);ctx.lineTo(W-pad.right,my);ctx.stroke();
+    // Y-axis price label
+    const priceAtMouse=lo+(hi-lo)*(1-(my-pad.top)/priceH);
+    ctx.setLineDash([]);
+    ctx.fillStyle='oklch(25% 0.005 142)';
+    const lw=52,lh=18;
+    ctx.fillRect(0,my-lh/2,lw,lh);
+    ctx.fillStyle='rgba(255,255,255,0.7)';
+    ctx.font='10px "JetBrains Mono",monospace';
+    ctx.textAlign='right';
+    ctx.fillText(priceAtMouse.toFixed(1),lw-4,my+3.5);
+  }
+  ctx.setLineDash([]);
+
+  // Highlight active candle
+  const isUp=d.close>=d.open;
+  const green='oklch(73% 0.18 142)';const red='oklch(65% 0.2 25)';
+  ctx.strokeStyle=isUp?green:red;
+  ctx.lineWidth=2;
+  const bTop=toY(Math.max(d.open,d.close));
+  const bBot=toY(Math.min(d.open,d.close));
+  const bH=Math.max(1,bBot-bTop);
+  ctx.strokeRect(cx-s.barW/2-1,bTop-1,s.barW+2,bH+2);
+
+  // X-axis date label
+  ctx.fillStyle='oklch(25% 0.005 142)';
+  const dlw=64,dlh=18;
+  ctx.fillRect(cx-dlw/2,H-pad.bottom+8,dlw,dlh);
+  ctx.fillStyle='rgba(255,255,255,0.7)';
+  ctx.font='10px "JetBrains Mono",monospace';
+  ctx.textAlign='center';
+  ctx.fillText(d.date.slice(5),cx,H-pad.bottom+20);
+
+}
+
+function updateKlineOhlcv(s,mx){
+  const bar=document.getElementById('klineOhlcv');
+  if(!bar)return;
+  const {data,pad,gap}=s;
+  const idx=Math.round((mx-pad.left-gap/2)/gap);
+  if(idx<0||idx>=data.length){bar.innerHTML='';return;}
+  const d=data[idx];
+  const chg=d.close-d.open;
+  const chgPct=(chg/d.open*100);
+  const sign=chg>=0?'+':'';
+  const cc=chg>=0?'var(--green)':'var(--red)';
+  bar.innerHTML=
+    '<span style="color:var(--tx2)">'+d.date+'</span>'+
+    '<span><span style="color:var(--tx3)">O </span><span style="color:var(--tx1)">'+d.open.toFixed(2)+'</span></span>'+
+    '<span><span style="color:var(--tx3)">H </span><span style="color:var(--tx1)">'+d.high.toFixed(2)+'</span></span>'+
+    '<span><span style="color:var(--tx3)">L </span><span style="color:var(--tx1)">'+d.low.toFixed(2)+'</span></span>'+
+    '<span><span style="color:var(--tx3)">C </span><span style="color:'+cc+'">'+d.close.toFixed(2)+'</span></span>'+
+    '<span style="color:'+cc+';font-weight:700">'+sign+chg.toFixed(2)+' ('+sign+chgPct.toFixed(2)+'%)</span>'+
+    '<span style="color:var(--tx3)">Vol '+d.volume.toLocaleString()+'</span>';
+}
+
+/* ═══ IntersectionObserver for staggered reveals ═══ */
+function initReveals(){
+  const els=document.querySelectorAll('.reveal:not(.visible)');
+  if(!els.length)return;
+  const obs=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('visible');
+        obs.unobserve(e.target);
+      }
+    });
+  },{threshold:0.08,rootMargin:'0px 0px -40px 0px'});
+  els.forEach(el=>obs.observe(el));
+}
+
+/* ═══ Tooltip positioning (fixed, never clipped) ═══ */
+function initTooltips(){
+  document.querySelectorAll('.vc-info').forEach(icon=>{
+    const tip=icon.querySelector('.vc-tooltip');
+    if(!tip)return;
+    icon.addEventListener('mouseenter',()=>{
+      tip.style.display='block';
+      const r=icon.getBoundingClientRect();
+      const tw=340;
+      let left=r.right-tw;
+      if(left<8)left=r.left;
+      if(left+tw>window.innerWidth-8)left=window.innerWidth-tw-8;
+      tip.style.left=left+'px';
+      tip.style.top=(r.bottom+8)+'px';
+    });
+    icon.addEventListener('mouseleave',()=>{
+      tip.style.display='none';
+    });
+  });
+}
+
+/* ═══ Init ═══ */
+window.addEventListener('DOMContentLoaded',()=>{
+  initReveals();
+  initTooltips();
+  setTimeout(()=>drawKline('klineCanvas','GOOGL'),100);
+});
+
+// Redraw on resize
+let resizeTimer;
+window.addEventListener('resize',()=>{
+  clearTimeout(resizeTimer);
+  resizeTimer=setTimeout(()=>{
+    drawKline('klineCanvas',currentKlineTicker);
+    if(currentTab==='dd')drawKline('klineCanvasDD','GOOGL');
+  },150);
+});
+</script>
+</body>
+</html>
