@@ -1,0 +1,301 @@
+{
+  "schema_version": "1.0",
+  "id": "stock-analysis",
+  "name": "股票与加密分析",
+  "tagline": "8 维打分 + 7 档评级，批量并行分析，一条命令看透任意标的",
+  "version": "v6.4.2",
+  "author": {
+    "name": "Community",
+    "org": "Antseer",
+    "homepage": "https://skillhub-pre.antseer.ai/skill/3462"
+  },
+  "published_at": "2025-10-01",
+  "updated_at": "2026-04-16",
+  "license": "Not specified",
+  "open_source": true,
+  "source_provenance": {
+    "source": "skillhub-api",
+    "source_id": "3462",
+    "upstream_url": "https://skillhub-pre.antseer.ai/skill/3462"
+  },
+
+  "taxonomy": {
+    "category": "股票与宏观分析",
+    "subcategory": "多维打分与排名",
+    "tags": [
+      "stocks",
+      "crypto",
+      "yahoo-finance",
+      "portfolio",
+      "earnings",
+      "dividends",
+      "watchlist",
+      "trading-analysis"
+    ],
+    "chains": [],
+    "protocols": []
+  },
+
+  "content": {
+    "about": {
+      "summary": "基于 Yahoo Finance 数据对任意股票或加密代码做 8 维度加权打分，覆盖财报惊喜、基本面、分析师情绪、板块表现、动量、历史形态、宏观环境与社交情绪，映射到从强卖出到强买入的 7 档评级。v6.4 起支持多标的批量并行分析，3 只股票耗时由原先 100–300 秒压缩到 15–40 秒；v6.4.2 修复 ticker 格式自动规范化与价格字段回退链，CRCL、BRK.B 等写法不再静默失败。\n\n除单点分析外，内置 Hot Scanner 聚合 CoinGecko、Google News、Yahoo Finance、Twitter/X 热度信号，以及 Rumor Scanner 挖出 M&A、内幕买入、分析师上调等早期线索，按潜在影响打分，支持在主流媒体覆盖之前完成功课。还提供分红安全评分、组合跟踪与观察列表告警，全链路覆盖从发现信号到监控持仓。",
+      "highlights": [
+        "8 维加权打分映射到 7 档评级，消除多源切屏",
+        "v6.4 批量并行执行，3 只股票 15–40 秒完成（较上一版快 3–8 倍）",
+        "v6.4.2 ticker 格式自动规范化，BRK.B / BRKB / BF.B 等写法无缝转换",
+        "数据完整性折扣机制，残缺维度不伪装成高置信度结论",
+        "Hot Scanner + Rumor Scanner 双扫描器，提前捕捉主流媒体前的早期信号"
+      ]
+    },
+
+    "usage_scenarios": {
+      "trigger_phrases": [
+        "帮我分析一下 TSLA",
+        "AAPL 现在能买吗",
+        "对比 AAPL MSFT GOOGL 哪个更强",
+        "查一下 BRK.B 的评级",
+        "扫一下今天最热的股票",
+        "查一下 NVDA 有没有早期买入信号",
+        "看看我持仓里哪只最弱",
+        "给我生成一份股票研究报告",
+        "我想看 ETH 的多维分析"
+      ],
+      "when_to_use": [
+        "财报季前后想快速筛一批持仓或备选的买卖信号",
+        "想用多维打分替代在多个网站切屏查数据",
+        "想在主流媒体覆盖之前捕捉社媒或内幕早期线索",
+        "需要把股票研究结论发到 Slack 或 wiki 的结构化报告",
+        "想了解持仓分红的安全性与可持续性"
+      ],
+      "when_not_to_use": [
+        "需要真正的实时 Level 1/2 行情——数据滞后 15–20 分钟",
+        "交易 A 股、港股等 Yahoo Finance 覆盖不全的市场",
+        "需要执行真实下单或调仓动作——本 skill 只做研究不做交易",
+        "需要选项/期权定价或波动率曲面分析"
+      ]
+    },
+
+    "use_cases": [
+      {
+        "title": "财报季组合体检",
+        "scenario": "财报周前想扫一遍自己的 20 个持仓，找出信号转弱可能踩雷的票",
+        "outcome": "得到按评级排序的持仓清单，标红 2 档以上下滑标的，附 8 维分解与数据完整性报告",
+        "example_command": "/portfolio 然后 /stock_compare 输入持仓清单"
+      },
+      {
+        "title": "候选标的横向对比",
+        "scenario": "在 AAPL / MSFT / GOOGL 三个大盘科技股里挑一只加仓，想看数据完整度与 8 维得分如何分布",
+        "outcome": "得到三者并排的评分卡与排名，含数据完整性折扣系数，v6.4 并行执行下 15–40 秒出结果",
+        "example_command": "/stock_compare AAPL MSFT GOOGL"
+      },
+      {
+        "title": "非标准 ticker 分析",
+        "scenario": "用户输入 BRK.B 或 BRKB 查伯克希尔 B 股，以前会报 invalid ticker",
+        "outcome": "v6.4.2 自动规范化为 BRK-B 并完成正常分析，失败时给出明确原因码而非模糊报错",
+        "example_command": "/stock BRK.B"
+      },
+      {
+        "title": "提前捕捉社媒热度",
+        "scenario": "想在主流财经媒体发稿之前，知道今天 Reddit 和 Twitter/X 上哪些票热度飙升",
+        "outcome": "得到跨 5 源聚合的热度榜，附链接与简述",
+        "example_command": "/stock_hot"
+      },
+      {
+        "title": "分红安全性核查",
+        "scenario": "打算长期持有 KO 收分红，想知道派息被砍的风险有多大",
+        "outcome": "得到派息历史、派息率、自由现金流覆盖、行业对比与安全评分",
+        "example_command": "/stock_dividend KO"
+      }
+    ],
+
+    "user_personas": {
+      "core": [
+        {
+          "label": "个人投资者",
+          "why_it_matters": "替代一次次切屏查财报、基本面、技术面，拿到整合的买卖信号，节省 15–30 分钟的手动整合时间",
+          "typical_jobs": [
+            "每周扫一遍自己关注的 20–50 只票",
+            "决定某只票该买该卖该观望",
+            "财报前后快速评估持仓风险"
+          ]
+        },
+        {
+          "label": "研究型分析师",
+          "why_it_matters": "批量对比含数据完整性折扣，不会把残缺数据伪装成高置信度结论；HTML 报告可直接嵌入研报",
+          "typical_jobs": [
+            "给 50 个备选标的做 8 维打分与排名",
+            "为客户出标准化的一页纸报告"
+          ]
+        }
+      ],
+      "secondary": [
+        {
+          "label": "金融科普内容创作者",
+          "why_it_matters": "Rumor Scanner + Hot Scanner 提供源源不断的选题与早期信号，每天能找到有热度且有数据支撑的议题",
+          "typical_jobs": [
+            "每天挑热度榜前三的票做选题",
+            "用 Rumor Scanner 找尚未被主流报道的早期线索"
+          ]
+        }
+      ],
+      "potential": [
+        {
+          "label": "合规与风控团队",
+          "why_it_matters": "结构化 JSON 输出便于接入风控或合规的内部系统，作为持仓信号灯",
+          "typical_jobs": [
+            "把 skill 产出作为持仓信号灯接入风险仪表盘"
+          ]
+        }
+      ]
+    }
+  },
+
+  "capabilities": {
+    "features": [
+      "单标的 8 维打分并映射到 7 档评级（STRONG_BUY 到 STRONG_SELL）",
+      "多标的批量并行对比与排名，v6.4 起速度提升 3–8 倍",
+      "ticker 格式自动规范化，BRK.B / BRKB 等非标写法自动转换",
+      "数据完整性折扣：缺失维度不贡献零分而是直接跳过并调整置信度",
+      "组合跟踪含成本基与损益",
+      "观察列表价格目标与信号变化告警",
+      "分红安全评分（收益率、派息率、5 年 CAGR、安全等级）",
+      "Hot Scanner 聚合五源热度（CoinGecko、Google News、Yahoo Finance、Reddit、Twitter/X）",
+      "Rumor Scanner 早期信号挖掘（M&A、内幕买入、分析师动作、社媒讨论）",
+      "HTML / Markdown / JSON / Text 四种输出格式"
+    ],
+    "commands": [
+      { "name": "/stock", "description": "单标的 8 维评分与 7 档评级", "args": [{"name": "ticker", "description": "股票或加密代码，如 AAPL 或 BTC-USD"}] },
+      { "name": "/stock_compare", "description": "多标的并排对比与排名（批量并行执行）", "args": [{"name": "tickers", "description": "空格分隔的多个代码"}] },
+      { "name": "/stock_dividend", "description": "分红收益、增速与安全性评分", "args": [{"name": "ticker", "description": "分红股代码"}] },
+      { "name": "/stock_watch", "description": "新增或移除观察列表条目", "args": [{"name": "action", "description": "add / remove / list"}, {"name": "ticker", "description": "股票代码"}] },
+      { "name": "/stock_alerts", "description": "查询已触发的观察列表告警" },
+      { "name": "/stock_hot", "description": "跨五源扫描当下热度榜" },
+      { "name": "/stock_rumors", "description": "挖出 M&A、内幕、分析师早期信号" },
+      { "name": "/portfolio", "description": "展示持仓、成本基与损益汇总" },
+      { "name": "/portfolio_add", "description": "新增一笔持仓，含数量与成本基", "args": [{"name": "ticker", "description": "代码"}, {"name": "quantity", "description": "数量"}, {"name": "cost", "description": "成本基（美元）"}] }
+    ],
+    "inputs": [
+      "股票或加密代码（ticker），支持 BRK.B / BRKB 等非标写法自动规范化",
+      "多个 ticker 空格分隔（批量模式）",
+      "持仓成本与数量",
+      "观察列表阈值配置（价格目标、止损、信号变化）"
+    ],
+    "outputs": [
+      "HTML 评级报告（含徽章、评分仪表盘与各维度卡片）",
+      "Markdown 摘要（可直接贴 Slack 或 wiki）",
+      "JSON 原始评分数据（含 failed_tickers 原因码）",
+      "纯文本摘要"
+    ]
+  },
+
+  "security": {
+    "network": [
+      "Yahoo Finance (yfinance)",
+      "CoinGecko API",
+      "Google News RSS",
+      "CNN Fear & Greed",
+      "SEC EDGAR",
+      "Reddit JSON API",
+      "Twitter/X（可选，需 bird CLI）"
+    ],
+    "filesystem": [
+      "~/.clawdbot/skills/stock-analysis/portfolios.json",
+      "~/.clawdbot/skills/stock-analysis/watchlist.json",
+      "--output-file 指定的输出路径（可写）"
+    ],
+    "shell": {
+      "used": true,
+      "detail": "可选 spawn bird CLI 用于 Twitter/X 情绪抓取；主分析流程通过 uv run 调用 Python 脚本"
+    },
+    "auth_required": [
+      "核心分析功能无需任何 API 凭证",
+      "Twitter/X 情绪功能需要 bird CLI 的 AUTH_TOKEN 与 CT0 Cookie"
+    ],
+    "data_storage": "~/.clawdbot/skills/stock-analysis/ 下的 watchlist.json 与 portfolios.json，输出文件写入 --output-file 指定路径",
+    "permissions": ["network", "file_read", "file_write", "shell"]
+  },
+
+  "limitations": [
+    "Yahoo Finance 价格数据可能滞后 15–20 分钟，不适合需要实时行情的场景",
+    "空头兴趣数据来自 FINRA 报表，滞后约 2 周",
+    "内幕交易数据来自 SEC EDGAR，滞后 2–3 天",
+    "主要覆盖美股与主流加密货币，A 股、港股等非美市场字段可能不全",
+    "Twitter/X 集成需要额外配置 bird CLI 与 Cookie，不开箱即用",
+    "所有分析仅供信息参考，不构成投资建议"
+  ],
+
+  "validation": {
+    "overall_status": "warning",
+    "blocking_issues": [],
+    "validated_at": "2026-04-16T08:00:00Z",
+    "validator_version": "antseer-validator-1.0.0",
+    "rules": [
+      {
+        "rule_id": "Rule1",
+        "name": "场景匹配度",
+        "status": "warning",
+        "aggregated_result": "warning",
+        "sub_checks": {
+          "core": {
+            "status": "pass",
+            "blocking": false,
+            "notes": "5 个 use_case 中 3 个直接服务个人投资者/研究型分析师核心场景"
+          },
+          "secondary": {
+            "status": "pass",
+            "blocking": false,
+            "notes": "Hot Scanner / Rumor Scanner 支持内容创作者选题需求"
+          },
+          "potential": {
+            "status": "warning",
+            "blocking": false,
+            "notes": "合规/风控用例尚未独立用例示例，仅通过 JSON 输出间接呼应"
+          }
+        },
+        "notes": "核心与次要画像通过；潜在画像降级 warning，按聚合规则整体结果 warning，但不阻断上架"
+      },
+      {
+        "rule_id": "Rule2",
+        "name": "用户画像一致性",
+        "status": "pass",
+        "aggregated_result": "pass",
+        "sub_checks": {
+          "core": {
+            "status": "pass",
+            "blocking": false,
+            "notes": "core 画像 2 个均在 use_cases 中有对应场景，个人投资者 3 个 use_case、研究型分析师 2 个"
+          },
+          "secondary": {
+            "status": "pass",
+            "blocking": false,
+            "notes": "secondary 画像通过 Hot Scanner / Rumor Scanner 特性呼应"
+          },
+          "potential": {
+            "status": "pass",
+            "blocking": false,
+            "notes": "potential 画像通过 JSON 输出格式呼应风控接入场景"
+          }
+        },
+        "notes": "三层画像均有对应能力支撑"
+      },
+      {
+        "rule_id": "Rule3",
+        "name": "命令完整性",
+        "status": "pass",
+        "notes": "9 个命令均在 scripts/ 目录下有对应入口文件：analyze_stock.py、dividends.py、watchlist.py、portfolio.py、hot_scanner.py、rumor_scanner.py"
+      },
+      {
+        "rule_id": "Rule4",
+        "name": "安全声明准确性",
+        "status": "pass",
+        "notes": "network 七项均在代码中可追溯到调用点；shell 使用 bird CLI 与 uv run 属实；filesystem 路径与代码中 DATA_DIR 常量一致"
+      },
+      {
+        "rule_id": "Rule5",
+        "name": "数据新鲜度与版本合规",
+        "status": "pass",
+        "notes": "updated_at 为 2026-04-16（当天），version v6.4.2 满足 semver 规范，license 字段已填写"
+      }
+    ]
+  }
+}
