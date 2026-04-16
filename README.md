@@ -4,14 +4,14 @@
 
 当前仓库里的核心文件：
 
-- `stock-analysis-v3.skill`：当前技能打包文件，实际是一个 zip archive，内部包含 `SKILL.md`、分析脚本、文档和测试文件
+- `stock-analysis-v4.skill`：当前技能打包文件，实际是一个 zip archive，内部包含 `SKILL.md`、分析脚本、文档和测试文件
 - `stock-dark-report.html`：静态深色版股票分析报告示例，可直接在浏览器里打开预览
 - `README.md`：仓库说明
 - `.gitignore`：忽略本地系统文件
 
 ## Skill 信息
 
-根据包内元数据，当前技能版本为 `v6.3.0`，主要能力包括：
+根据包内 `_meta.json`，当前发布包版本标记为 `v6.2.0`，主要能力包括：
 
 - 美股与加密货币分析
 - 8 维股票评分
@@ -27,7 +27,7 @@
 
 ## 仓库内容说明
 
-`stock-analysis-v3.skill` 包内可看到以下内容：
+`stock-analysis-v4.skill` 包内可看到以下内容：
 
 - `SKILL.md`
 - `README.md`
@@ -51,13 +51,13 @@ open stock-dark-report.html
 查看技能包内容：
 
 ```bash
-unzip -l stock-analysis-v3.skill
+unzip -l stock-analysis-v4.skill
 ```
 
 解压技能包到本地目录：
 
 ```bash
-unzip stock-analysis-v3.skill -d ./unpacked
+unzip stock-analysis-v4.skill -d ./unpacked
 ```
 
 ## 备注
