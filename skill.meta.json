@@ -3,7 +3,7 @@
   "id": "stock-analysis",
   "name": "股票分析",
   "tagline": "8 维打分 + 7 档评级，批量并行分析，一条命令看透任意股票标的",
-  "version": "v6.4.2",
+  "version": "v6.5.0",
   "author": {
     "name": "Community",
     "org": "Antseer",
@@ -37,11 +37,13 @@
 
   "content": {
     "about": {
-      "summary": "基于 Yahoo Finance 数据对任意股票代码做 8 维度加权打分，覆盖财报惊喜、基本面、分析师情绪、板块表现、动量、历史形态、宏观环境与社交情绪，映射到从强卖出到强买入的 7 档评级。v6.4 起支持多标的批量并行分析，3 只股票耗时由原先 100–300 秒压缩到 15–40 秒；v6.4.2 修复 ticker 格式自动规范化与价格字段回退链，CRCL、BRK.B 等写法不再静默失败。\n\n除单点分析外，内置 Hot Scanner 聚合 Google News、Yahoo Finance、Reddit、Twitter/X 热度信号，以及 Rumor Scanner 挖出 M&A、内幕买入、分析师上调等早期线索，按潜在影响打分，支持在主流媒体覆盖之前完成功课。还提供分红安全评分、组合跟踪与观察列表告警，全链路覆盖从发现信号到监控持仓。",
+      "summary": "基于 Yahoo Finance 数据对任意股票代码做 8 维度加权打分，覆盖财报惊喜、基本面、分析师情绪、板块表现、动量、历史形态、宏观环境与社交情绪，映射到从强卖出到强买入的 7 档评级。v6.4 起支持多标的批量并行分析，3 只股票耗时由原先 100–300 秒压缩到 15–40 秒；v6.4.2 修复 ticker 格式自动规范化与价格字段回退链，CRCL、BRK.B 等写法不再静默失败；v6.5.0 新增预置股票目录与中文股票名展示，前端或 Agent 可零网络成本拉取常见股票清单。\n\n除单点分析外，内置 Hot Scanner 聚合 Google News、Yahoo Finance、Reddit、Twitter/X 热度信号，以及 Rumor Scanner 挖出 M&A、内幕买入、分析师上调等早期线索，按潜在影响打分，支持在主流媒体覆盖之前完成功课。还提供分红安全评分、组合跟踪与观察列表告警，全链路覆盖从发现信号到监控持仓。",
       "highlights": [
         "8 维加权打分映射到 7 档评级，消除多源切屏",
         "v6.4 批量并行执行，3 只股票 15–40 秒完成（较上一版快 3–8 倍）",
         "v6.4.2 ticker 格式自动规范化，BRK.B / BRKB / BF.B 等写法无缝转换",
+        "v6.5.0 内置约 30 只热门美股预置目录，可用 --catalog 零网络返回 JSON",
+        "输出中支持展示中文股票名，适合中文前端和选股菜单",
         "数据完整性折扣机制，残缺维度不伪装成高置信度结论",
         "Hot Scanner + Rumor Scanner 双扫描器，提前捕捉主流媒体前的早期信号"
       ]
@@ -53,6 +55,7 @@
         "AAPL 现在能买吗",
         "对比 AAPL MSFT GOOGL 哪个更强",
         "查一下 BRK.B 的评级",
+        "给我一个常用股票清单",
         "扫一下今天最热的股票",
         "查一下 NVDA 有没有早期买入信号",
         "看看我持仓里哪只最弱",
@@ -62,6 +65,7 @@
       "when_to_use": [
         "财报季前后想快速筛一批持仓或备选的买卖信号",
         "想用多维打分替代在多个网站切屏查数据",
+        "需要给前端或聊天助手提供可选股票目录",
         "想在主流媒体覆盖之前捕捉社媒或内幕早期线索",
         "需要把股票研究结论发到 Slack 或 wiki 的结构化报告",
         "想了解持仓分红的安全性与可持续性"
@@ -92,6 +96,12 @@
         "scenario": "用户输入 BRK.B 或 BRKB 查伯克希尔 B 股，以前会报 invalid ticker",
         "outcome": "v6.4.2 自动规范化为 BRK-B 并完成正常分析，失败时给出明确原因码而非模糊报错",
         "example_command": "/stock BRK.B"
+      },
+      {
+        "title": "前端股票目录预置",
+        "scenario": "想给网页、App 或聊天助手提供一组常见美股快捷选择，不希望每次都实时请求行情接口",
+        "outcome": "通过 --catalog 直接返回内置股票目录 JSON，含分类、代码和中文股票名，可直接驱动下拉菜单或推荐卡片",
+        "example_command": "/stock_catalog"
       },
       {
         "title": "提前捕捉社媒热度",
@@ -154,6 +164,8 @@
       "单标的 8 维打分并映射到 7 档评级（STRONG_BUY 到 STRONG_SELL）",
       "多标的批量并行对比与排名，v6.4 起速度提升 3–8 倍",
       "ticker 格式自动规范化，BRK.B / BRKB 等非标写法自动转换",
+      "内置预置股票目录（STOCK_CATALOG），可零网络返回分类后的热门股票清单",
+      "输出中可展示中文股票名，适合中文界面与选股器",
       "数据完整性折扣：缺失维度不贡献零分而是直接跳过并调整置信度",
       "组合跟踪含成本基与损益",
       "观察列表价格目标与信号变化告警",
@@ -170,12 +182,14 @@
       { "name": "/stock_alerts", "description": "查询已触发的观察列表告警" },
       { "name": "/stock_hot", "description": "跨四源扫描当下热度榜" },
       { "name": "/stock_rumors", "description": "挖出 M&A、内幕、分析师早期信号" },
+      { "name": "/stock_catalog", "description": "返回内置股票目录，适合前端下拉菜单或快捷选择" },
       { "name": "/portfolio", "description": "展示持仓、成本基与损益汇总" },
       { "name": "/portfolio_add", "description": "新增一笔持仓，含数量与成本基", "args": [{"name": "ticker", "description": "代码"}, {"name": "quantity", "description": "数量"}, {"name": "cost", "description": "成本基（美元）"}] }
     ],
     "inputs": [
       "股票代码（ticker），支持 BRK.B / BRKB 等非标写法自动规范化",
       "多个 ticker 空格分隔（批量模式）",
+      "无参数的股票目录查询请求（catalog 模式）",
       "持仓成本与数量",
       "观察列表阈值配置（价格目标、止损、信号变化）"
     ],
@@ -237,7 +251,7 @@
           "core": {
             "status": "pass",
             "blocking": false,
-            "notes": "5 个 use_case 中 3 个直接服务个人投资者/研究型分析师核心场景"
+            "notes": "6 个 use_case 中 4 个直接服务个人投资者/研究型分析师核心场景"
           },
           "secondary": {
             "status": "pass",
@@ -280,7 +294,7 @@
         "rule_id": "Rule3",
         "name": "命令完整性",
         "status": "pass",
-        "notes": "9 个命令均在 scripts/ 目录下有对应入口文件：analyze_stock.py、dividends.py、watchlist.py、portfolio.py、hot_scanner.py、rumor_scanner.py"
+        "notes": "10 个命令均在 scripts/ 目录下有对应入口文件或 analyze_stock.py 内对应参数入口：analyze_stock.py、dividends.py、watchlist.py、portfolio.py、hot_scanner.py、rumor_scanner.py、--catalog"
       },
       {
         "rule_id": "Rule4",
@@ -292,7 +306,7 @@
         "rule_id": "Rule5",
         "name": "数据新鲜度与版本合规",
         "status": "pass",
-        "notes": "version v6.4.2 满足 semver 规范，license 字段已填写；仓库元数据已于 2026-04-17 更新为股票版描述"
+        "notes": "version v6.5.0 满足 semver 规范，license 字段已填写；仓库元数据已于 2026-04-17 更新到预置股票目录版本"
       }
     ]
   }
