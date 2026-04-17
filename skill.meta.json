@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "id": "stock-analysis",
-  "name": "股票与加密分析",
-  "tagline": "8 维打分 + 7 档评级，批量并行分析，一条命令看透任意标的",
+  "name": "股票分析",
+  "tagline": "8 维打分 + 7 档评级，批量并行分析，一条命令看透任意股票标的",
   "version": "v6.4.2",
   "author": {
     "name": "Community",
@@ -10,7 +10,7 @@
     "homepage": "https://skillhub-pre.antseer.ai/skill/3462"
   },
   "published_at": "2025-10-01",
-  "updated_at": "2026-04-16",
+  "updated_at": "2026-04-17",
   "license": "Not specified",
   "open_source": true,
   "source_provenance": {
@@ -24,7 +24,6 @@
     "subcategory": "多维打分与排名",
     "tags": [
       "stocks",
-      "crypto",
       "yahoo-finance",
       "portfolio",
       "earnings",
@@ -38,7 +37,7 @@
 
   "content": {
     "about": {
-      "summary": "基于 Yahoo Finance 数据对任意股票或加密代码做 8 维度加权打分，覆盖财报惊喜、基本面、分析师情绪、板块表现、动量、历史形态、宏观环境与社交情绪，映射到从强卖出到强买入的 7 档评级。v6.4 起支持多标的批量并行分析，3 只股票耗时由原先 100–300 秒压缩到 15–40 秒；v6.4.2 修复 ticker 格式自动规范化与价格字段回退链，CRCL、BRK.B 等写法不再静默失败。\n\n除单点分析外，内置 Hot Scanner 聚合 CoinGecko、Google News、Yahoo Finance、Twitter/X 热度信号，以及 Rumor Scanner 挖出 M&A、内幕买入、分析师上调等早期线索，按潜在影响打分，支持在主流媒体覆盖之前完成功课。还提供分红安全评分、组合跟踪与观察列表告警，全链路覆盖从发现信号到监控持仓。",
+      "summary": "基于 Yahoo Finance 数据对任意股票代码做 8 维度加权打分，覆盖财报惊喜、基本面、分析师情绪、板块表现、动量、历史形态、宏观环境与社交情绪，映射到从强卖出到强买入的 7 档评级。v6.4 起支持多标的批量并行分析，3 只股票耗时由原先 100–300 秒压缩到 15–40 秒；v6.4.2 修复 ticker 格式自动规范化与价格字段回退链，CRCL、BRK.B 等写法不再静默失败。\n\n除单点分析外，内置 Hot Scanner 聚合 Google News、Yahoo Finance、Reddit、Twitter/X 热度信号，以及 Rumor Scanner 挖出 M&A、内幕买入、分析师上调等早期线索，按潜在影响打分，支持在主流媒体覆盖之前完成功课。还提供分红安全评分、组合跟踪与观察列表告警，全链路覆盖从发现信号到监控持仓。",
       "highlights": [
         "8 维加权打分映射到 7 档评级，消除多源切屏",
         "v6.4 批量并行执行，3 只股票 15–40 秒完成（较上一版快 3–8 倍）",
@@ -58,7 +57,7 @@
         "查一下 NVDA 有没有早期买入信号",
         "看看我持仓里哪只最弱",
         "给我生成一份股票研究报告",
-        "我想看 ETH 的多维分析"
+        "我想看 AMD 的多维分析"
       ],
       "when_to_use": [
         "财报季前后想快速筛一批持仓或备选的买卖信号",
@@ -97,7 +96,7 @@
       {
         "title": "提前捕捉社媒热度",
         "scenario": "想在主流财经媒体发稿之前，知道今天 Reddit 和 Twitter/X 上哪些票热度飙升",
-        "outcome": "得到跨 5 源聚合的热度榜，附链接与简述",
+        "outcome": "得到跨 4 源聚合的热度榜，附链接与简述",
         "example_command": "/stock_hot"
       },
       {
@@ -159,23 +158,23 @@
       "组合跟踪含成本基与损益",
       "观察列表价格目标与信号变化告警",
       "分红安全评分（收益率、派息率、5 年 CAGR、安全等级）",
-      "Hot Scanner 聚合五源热度（CoinGecko、Google News、Yahoo Finance、Reddit、Twitter/X）",
+      "Hot Scanner 聚合四源热度（Google News、Yahoo Finance、Reddit、Twitter/X）",
       "Rumor Scanner 早期信号挖掘（M&A、内幕买入、分析师动作、社媒讨论）",
       "HTML / Markdown / JSON / Text 四种输出格式"
     ],
     "commands": [
-      { "name": "/stock", "description": "单标的 8 维评分与 7 档评级", "args": [{"name": "ticker", "description": "股票或加密代码，如 AAPL 或 BTC-USD"}] },
+      { "name": "/stock", "description": "单标的 8 维评分与 7 档评级", "args": [{"name": "ticker", "description": "股票代码，如 AAPL 或 BRK-B"}] },
       { "name": "/stock_compare", "description": "多标的并排对比与排名（批量并行执行）", "args": [{"name": "tickers", "description": "空格分隔的多个代码"}] },
       { "name": "/stock_dividend", "description": "分红收益、增速与安全性评分", "args": [{"name": "ticker", "description": "分红股代码"}] },
       { "name": "/stock_watch", "description": "新增或移除观察列表条目", "args": [{"name": "action", "description": "add / remove / list"}, {"name": "ticker", "description": "股票代码"}] },
       { "name": "/stock_alerts", "description": "查询已触发的观察列表告警" },
-      { "name": "/stock_hot", "description": "跨五源扫描当下热度榜" },
+      { "name": "/stock_hot", "description": "跨四源扫描当下热度榜" },
       { "name": "/stock_rumors", "description": "挖出 M&A、内幕、分析师早期信号" },
       { "name": "/portfolio", "description": "展示持仓、成本基与损益汇总" },
       { "name": "/portfolio_add", "description": "新增一笔持仓，含数量与成本基", "args": [{"name": "ticker", "description": "代码"}, {"name": "quantity", "description": "数量"}, {"name": "cost", "description": "成本基（美元）"}] }
     ],
     "inputs": [
-      "股票或加密代码（ticker），支持 BRK.B / BRKB 等非标写法自动规范化",
+      "股票代码（ticker），支持 BRK.B / BRKB 等非标写法自动规范化",
       "多个 ticker 空格分隔（批量模式）",
       "持仓成本与数量",
       "观察列表阈值配置（价格目标、止损、信号变化）"
@@ -191,7 +190,6 @@
   "security": {
     "network": [
       "Yahoo Finance (yfinance)",
-      "CoinGecko API",
       "Google News RSS",
       "CNN Fear & Greed",
       "SEC EDGAR",
@@ -205,7 +203,7 @@
     ],
     "shell": {
       "used": true,
-      "detail": "可选 spawn bird CLI 用于 Twitter/X 情绪抓取；主分析流程通过 uv run 调用 Python 脚本"
+      "detail": "可选调用 bird CLI 用于 Twitter/X 情绪抓取；主分析流程通过 uv run 调用 Python 脚本"
     },
     "auth_required": [
       "核心分析功能无需任何 API 凭证",
@@ -219,7 +217,7 @@
     "Yahoo Finance 价格数据可能滞后 15–20 分钟，不适合需要实时行情的场景",
     "空头兴趣数据来自 FINRA 报表，滞后约 2 周",
     "内幕交易数据来自 SEC EDGAR，滞后 2–3 天",
-    "主要覆盖美股与主流加密货币，A 股、港股等非美市场字段可能不全",
+    "主要覆盖美股，A 股、港股等非美市场字段可能不全",
     "Twitter/X 集成需要额外配置 bird CLI 与 Cookie，不开箱即用",
     "所有分析仅供信息参考，不构成投资建议"
   ],
@@ -288,13 +286,13 @@
         "rule_id": "Rule4",
         "name": "安全声明准确性",
         "status": "pass",
-        "notes": "network 七项均在代码中可追溯到调用点；shell 使用 bird CLI 与 uv run 属实；filesystem 路径与代码中 DATA_DIR 常量一致"
+        "notes": "network 六项均在代码中可追溯到调用点；shell 使用 bird CLI 与 uv run 属实；filesystem 路径与代码中 DATA_DIR 常量一致"
       },
       {
         "rule_id": "Rule5",
         "name": "数据新鲜度与版本合规",
         "status": "pass",
-        "notes": "updated_at 为 2026-04-16（当天），version v6.4.2 满足 semver 规范，license 字段已填写"
+        "notes": "version v6.4.2 满足 semver 规范，license 字段已填写；仓库元数据已于 2026-04-17 更新为股票版描述"
       }
     ]
   }
