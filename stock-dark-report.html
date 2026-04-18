@@ -298,7 +298,9 @@ a:hover{text-decoration:underline}
 .verdict-hero{
   margin-bottom:var(--s6);
 }
-.vrow{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s4);margin-bottom:var(--s6)}
+.vrow{display:flex;flex-wrap:wrap;gap:var(--s4);margin-bottom:var(--s6)}
+.vrow>.vcard-shell{flex:0 1 calc((100% - 2*var(--s4))/3);min-width:0}
+.vrow:not(:has(>.vcard-shell:nth-child(3)))>.vcard-shell{flex:1 1 0}
 
 /* ── Double-bezel verdict card ── */
 .vcard-shell{
